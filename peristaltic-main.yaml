@@ -1,0 +1,268 @@
+substitutions:
+  pwm_frequency: 20000 Hz
+
+esphome:
+  name: peristaltic-main
+
+esp32:
+  board: wemos_d1_mini32
+  framework:
+    version: latest
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+# Sets up Bluetooth LE (Only on ESP32) to allow the user
+# to provision wifi credentials to the device.
+esp32_improv:
+  authorizer: none
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+ota:
+  password: !secret ota_password
+
+output:
+  - platform: template
+    id: pump1_target_speed
+    type: float
+    write_action:
+      then:
+        - if:
+            condition:
+              switch.is_on: pump1_reverse
+            then:
+              - output.turn_off: pump1_direction_pin2
+              - output.turn_on: pump1_direction_pin1
+            else:
+              - output.turn_on: pump1_direction_pin2
+              - output.turn_off: pump1_direction_pin1
+        - if:
+            condition:
+              light.is_on: pump1_speed_controller
+            then:
+              - output.set_level:
+                  id: pump1_speed_pin
+                  level: !lambda return (0.4 + (0.6 * id(pump1_speed_controller).current_values.get_brightness()));
+            else:
+              - output.turn_off: pump1_speed_pin
+  - platform: template
+    id: pump2_target_speed
+    type: float
+    write_action:
+      then:
+        - if:
+            condition:
+              switch.is_on: pump2_reverse
+            then:
+              - output.turn_off: pump2_direction_pin2
+              - output.turn_on: pump2_direction_pin1
+            else:
+              - output.turn_on: pump2_direction_pin2
+              - output.turn_off: pump2_direction_pin1
+        - if:
+            condition:
+              light.is_on: pump2_speed_controller
+            then:
+              - output.set_level:
+                  id: pump2_speed_pin
+                  level: !lambda return (0.4 + (0.6 * id(pump2_speed_controller).current_values.get_brightness()));
+            else:
+              - output.turn_off: pump2_speed_pin
+  - platform: template
+    id: pump3_target_speed
+    type: float
+    write_action:
+      then:
+        - if:
+            condition:
+              switch.is_on: pump3_reverse
+            then:
+              - output.turn_off: pump3_direction_pin2
+              - output.turn_on: pump3_direction_pin1
+            else:
+              - output.turn_on: pump3_direction_pin2
+              - output.turn_off: pump3_direction_pin1
+        - if:
+            condition:
+              light.is_on: pump3_speed_controller
+            then:
+              - output.set_level:
+                  id: pump3_speed_pin
+                  level: !lambda return (0.4 + (0.6 * id(pump3_speed_controller).current_values.get_brightness()));
+            else:
+              - output.turn_off: pump3_speed_pin
+  - platform: template
+    id: pump4_target_speed
+    type: float
+    write_action:
+      then:
+        - if:
+            condition:
+              switch.is_on: pump4_reverse
+            then:
+              - output.turn_off: pump4_direction_pin2
+              - output.turn_on: pump4_direction_pin1
+            else:
+              - output.turn_on: pump4_direction_pin2
+              - output.turn_off: pump4_direction_pin1
+        - if:
+            condition:
+              light.is_on: pump4_speed_controller
+            then:
+              - output.set_level:
+                  id: pump4_speed_pin
+                  level: !lambda return (0.4 + (0.6 * id(pump4_speed_controller).current_values.get_brightness()));
+            else:
+              - output.turn_off: pump4_speed_pin
+    
+  - platform: ledc
+    id: pump1_speed_pin
+    pin: GPIO26
+    frequency: $pwm_frequency
+  - platform: gpio
+    id: pump1_direction_pin1
+    pin: GPIO21
+  - platform: gpio
+    id: pump1_direction_pin2
+    pin: GPIO32
+
+  - platform: ledc
+    id: pump2_speed_pin
+    pin: GPIO18
+    frequency: $pwm_frequency
+  - platform: gpio
+    id: pump2_direction_pin1
+    pin: GPIO25
+  - platform: gpio
+    id: pump2_direction_pin2
+    pin: GPIO22
+
+  - platform: ledc
+    id: pump3_speed_pin
+    pin: GPIO19
+    frequency: $pwm_frequency
+  - platform: gpio
+    id: pump3_direction_pin1
+    pin: GPIO4
+  - platform: gpio
+    id: pump3_direction_pin2
+    pin: GPIO2
+
+  - platform: ledc
+    id: pump4_speed_pin
+    pin: GPIO23
+    frequency: $pwm_frequency
+  - platform: gpio
+    id: pump4_direction_pin1
+    pin: GPIO16
+  - platform: gpio
+    id: pump4_direction_pin2
+    pin: GPIO17
+
+light:
+  - platform: monochromatic
+    id: pump1_speed_controller
+    name: "Main Pump 1"
+    output: pump1_target_speed
+    default_transition_length: 0s
+    gamma_correct: 0
+  - platform: monochromatic
+    id: pump2_speed_controller
+    name: "Main Pump 2"
+    output: pump2_target_speed
+    default_transition_length: 0s
+    gamma_correct: 0
+  - platform: monochromatic
+    id: pump3_speed_controller
+    name: "Main Pump 3"
+    output: pump3_target_speed
+    default_transition_length: 0s
+    gamma_correct: 0
+  - platform: monochromatic
+    id: pump4_speed_controller
+    name: "Main Pump 4"
+    output: pump4_target_speed
+    default_transition_length: 0s
+    gamma_correct: 0
+
+switch:
+  - platform: restart
+    name: "Peristaltic Main Restart"
+  - platform: gpio
+    pin: GPIO27
+    name: "Enable Main Pumps 1-2"
+  - platform: gpio
+    pin: GPIO33
+    name: "Enable Main Pumps 3-4"
+
+  - platform: template
+    name: "Main Pump 1 Reverse"
+    id: pump1_reverse
+    turn_on_action:
+      - output.turn_off: pump1_direction_pin2
+      - output.turn_on: pump1_direction_pin1
+      - switch.template.publish:
+          id: pump1_reverse
+          state: ON
+    turn_off_action:
+      - output.turn_on: pump1_direction_pin2
+      - output.turn_off: pump1_direction_pin1
+      - switch.template.publish:
+          id: pump1_reverse
+          state: OFF
+
+  - platform: template
+    name: "Main Pump 2 Reverse"
+    id: pump2_reverse
+    turn_on_action:
+      - output.turn_off: pump2_direction_pin2
+      - output.turn_on: pump2_direction_pin1
+      - switch.template.publish:
+          id: pump2_reverse
+          state: ON
+    turn_off_action:
+      - output.turn_on: pump2_direction_pin2
+      - output.turn_off: pump2_direction_pin1
+      - switch.template.publish:
+          id: pump2_reverse
+          state: OFF
+
+  - platform: template
+    name: "Main Pump 3 Reverse"
+    id: pump3_reverse
+    turn_on_action:
+      - output.turn_off: pump3_direction_pin2
+      - output.turn_on: pump3_direction_pin1
+      - switch.template.publish:
+          id: pump3_reverse
+          state: ON
+    turn_off_action:
+      - output.turn_on: pump3_direction_pin2
+      - output.turn_off: pump3_direction_pin1
+      - switch.template.publish:
+          id: pump3_reverse
+          state: OFF
+
+  - platform: template
+    name: "Main Pump 4 Reverse"
+    id: pump4_reverse
+    turn_on_action:
+      - output.turn_off: pump4_direction_pin2
+      - output.turn_on: pump4_direction_pin1
+      - switch.template.publish:
+          id: pump4_reverse
+          state: ON
+    turn_off_action:
+      - output.turn_on: pump4_direction_pin2
+      - output.turn_off: pump4_direction_pin1
+      - switch.template.publish:
+          id: pump4_reverse
+          state: OFF

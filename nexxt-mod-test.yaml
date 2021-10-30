@@ -1,0 +1,66 @@
+esphome:
+  name: nexxt-mod-test
+
+esp32:
+  board: wemos_d1_mini32
+  framework:
+    version: latest
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+# Sets up Bluetooth LE (Only on ESP32) to allow the user
+# to provision wifi credentials to the device.
+esp32_improv:
+  authorizer: none
+
+# Make sure logging is not using the serial port
+logger:
+  baud_rate: 0
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+ota:
+  password: !secret ota_password
+
+status_led:
+  pin:
+    number: GPIO1
+    inverted: True
+
+binary_sensor:
+  - platform: gpio
+    name: "NEXXT Button"
+    pin:
+      number: GPIO9
+      mode: INPUT_PULLUP
+      inverted: true
+    on_press:
+      - switch.toggle: GP32
+
+output:
+  - platform: ledc
+    pin:
+      number: GPIO3
+      inverted: true
+    id: red_led
+
+light:
+  - platform: monochromatic
+    name: "Red LED"
+    output: red_led
+    default_transition_length: 300ms
+
+switch:
+  - platform: restart
+    name: "NEXXT Device Restart"
+  - platform: safe_mode
+    name: "NEXXT Device Restart (Safe Mode)"
+  - platform: gpio
+    id: GP32
+    name: "GPIO32"
+    pin: GPIO32

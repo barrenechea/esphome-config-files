@@ -1,0 +1,33 @@
+esphome:
+  name: humidifier
+
+esp32:
+  board: wemos_d1_mini32
+  framework:
+    version: latest
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+# Sets up Bluetooth LE (Only on ESP32) to allow the user
+# to provision wifi credentials to the device.
+esp32_improv:
+  authorizer: none
+
+switch:
+  - platform: gpio
+    name: "Humidifier"
+    pin: 2
+    inverted: False
+    id: humidifierSwitch
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+ota:
