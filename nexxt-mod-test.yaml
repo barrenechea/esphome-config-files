@@ -1,3 +1,6 @@
+substitutions:
+  devicename: NEXXT Device
+
 esphome:
   name: nexxt-mod-test
 
@@ -34,7 +37,7 @@ status_led:
 
 binary_sensor:
   - platform: gpio
-    name: "NEXXT Button"
+    name: ${devicename} Button
     pin:
       number: GPIO9
       mode: INPUT_PULLUP
@@ -51,16 +54,16 @@ output:
 
 light:
   - platform: monochromatic
-    name: "Red LED"
+    name: ${devicename} Red LED
     output: red_led
     default_transition_length: 300ms
 
 switch:
   - platform: restart
-    name: "NEXXT Device Restart"
+    name: ${devicename} Restart
   - platform: safe_mode
-    name: "NEXXT Device Restart (Safe Mode)"
+    name: ${devicename} Restart (Safe Mode)
   - platform: gpio
     id: GP32
-    name: "GPIO32"
+    name: ${devicename} GPIO32
     pin: GPIO32
