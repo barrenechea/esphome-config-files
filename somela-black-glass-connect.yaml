@@ -30,7 +30,7 @@ wifi:
 logger:
   #level: VERY_VERBOSE
   #level: VERBOSE
-  baud_rate: 0
+  #baud_rate: 0
 
 # Enable Home Assistant API
 api:
