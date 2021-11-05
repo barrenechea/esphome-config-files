@@ -36,7 +36,7 @@ ota:
 
 status_led:
   pin:
-    number: RX
+    number: GPIO1
     inverted: True
 
 binary_sensor:
