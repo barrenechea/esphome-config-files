@@ -10,8 +10,8 @@ esp32:
     type: esp-idf
     version: latest
     # Custom sdkconfig options
-    sdkconfig_options:
-      CONFIG_COMPILER_OPTIMIZATION_SIZE: y
+    #sdkconfig_options:
+    #  CONFIG_COMPILER_OPTIMIZATION_SIZE: y
 
 wifi:
   ssid: !secret wifi_ssid
