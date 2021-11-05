@@ -47,7 +47,7 @@ binary_sensor:
       mode: INPUT_PULLUP
       inverted: true
     on_press:
-      - switch.toggle: GP32
+      - switch.toggle: plug_top_left
 
 output:
   - platform: ledc
@@ -63,11 +63,42 @@ light:
     default_transition_length: 300ms
 
 switch:
+    # Platform controls
   - platform: restart
     name: ${devicename} Restart
   - platform: safe_mode
     name: ${devicename} Restart (Safe Mode)
+    # Plugs
   - platform: gpio
-    id: GP32
-    name: ${devicename} GPIO32
+    id: plug_top_left
+    name: ${devicename} Plug - Top Left
     pin: GPIO2
+  - platform: gpio
+    id: plug_top_right
+    name: ${devicename} Plug - Top Right
+    pin: GPIO3
+  - platform: gpio
+    id: plug_bottom_left
+    name: ${devicename} Plug - Bottom Left
+    pin: GPIO4
+  - platform: gpio
+    id: plug_bottom_right
+    name: ${devicename} Plug - Top Right
+    pin: GPIO5
+    # USB
+  #- platform: gpio
+  #  id: usb_top_left
+  #  name: ${devicename} USB - Top Left
+  #  pin: GPIO8
+  - platform: gpio
+    id: usb_top_right
+    name: ${devicename} USB - Top Right
+    pin: GPIO18
+  - platform: gpio
+    id: usb_bottom_left
+    name: ${devicename} USB - Bottom Left
+    pin: GPIO19
+  - platform: gpio
+    id: usb_bottom_right
+    name: ${devicename} USB - Bottom Right
+    pin: TX
