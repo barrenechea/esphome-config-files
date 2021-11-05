@@ -1,5 +1,5 @@
 substitutions:
-  devicename: ESP32 C3 13U
+  devicename: ESP32-C3-13U
 
 esphome:
   name: esp32-c3-13u
