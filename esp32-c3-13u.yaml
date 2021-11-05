@@ -25,7 +25,7 @@ wifi:
 
 # Make sure logging is not using the serial port
 logger:
-#  baud_rate: 0
+  baud_rate: 0
 
 # Enable Home Assistant API
 api:
