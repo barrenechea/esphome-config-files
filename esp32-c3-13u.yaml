@@ -1,0 +1,40 @@
+substitutions:
+  devicename: ESP32 C3 13U
+
+esphome:
+  name: esp32-c3-13u
+
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: esp-idf
+    version: recommended
+    # Custom sdkconfig options
+    sdkconfig_options:
+      CONFIG_COMPILER_OPTIMIZATION_SIZE: y
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+# Sets up Bluetooth LE (Only on ESP32) to allow the user
+# to provision wifi credentials to the device.
+esp32_improv:
+  authorizer: none
+
+# Make sure logging is not using the serial port
+logger:
+  baud_rate: 0
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+ota:
+  password: !secret ota_password
+
+status_led:
+  pin:
+    number: GPIO1
+    inverted: True

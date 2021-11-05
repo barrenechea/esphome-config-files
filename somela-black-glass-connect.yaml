@@ -1,5 +1,5 @@
 external_components:
-  source: github://jesserockz/esphome@tuya-new
+  source: github://SebastianBar/esphome@tuya-new
   components: [tuya_new]
 
 esphome:
@@ -24,6 +24,7 @@ captive_portal:
 # Make sure logging is not using the serial port
 logger:
   #level: VERY_VERBOSE
+  #level: VERBOSE
   baud_rate: 0
 
 # Enable Home Assistant API
@@ -46,10 +47,10 @@ climate:
   - platform: tuya_new
     name: "Somela Black Glass Connect"
     switch_datapoint: 0
-#    active_state_datapoint: 6
+    #switch_datapoint: 6
     target_temperature_datapoint: 7
     current_temperature_datapoint: 10
-    hysteresis: 2
+    hysteresis: -2
     visual:
       min_temperature: 5
       max_temperature: 50

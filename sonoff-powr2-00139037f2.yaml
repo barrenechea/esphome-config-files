@@ -1,3 +1,6 @@
+substitutions:
+  devicename: Sonoff POWR2 00139037F2
+
 esphome:
   name: sonoff-powr2-00139037f2
 
@@ -12,8 +15,8 @@ wifi:
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
-    ssid: "Sonoff POWR2 00139037F2"
-    password: "hJ3hJJCSlslr"
+    ssid: ${devicename}
+    password: hJ3hJJCSlslr
 
 captive_portal:
 
@@ -45,40 +48,40 @@ binary_sensor:
       number: GPIO0
       mode: INPUT_PULLUP
       inverted: True
-    name: "Sonoff POWR2 00139037F2 Button"
+    name: ${devicename} Button
     internal: true
     on_press:
       - switch.toggle: relay
 
 sensor:
   - platform: wifi_signal
-    name: "Sonoff POWR2 00139037F2 WiFi Signal"
+    name: ${devicename} WiFi Signal
     update_interval: 60s
   - platform: cse7766
     update_interval: 1s
     current:
-      name: "Sonoff POWR2 00139037F2 Current"
+      name: ${devicename} Current
     voltage:
-      name: "Sonoff POWR2 00139037F2 Voltage"
+      name: ${devicename} Voltage
     power:
       id: sonoff_power
-      name: "Sonoff POWR2 00139037F2 Power"
+      name: ${devicename} Power
       filters:
         # Multiplication factor from W to kW is 0.001
         - multiply: 0.001
       unit_of_measurement: kW
       accuracy_decimals: 4
   - platform: total_daily_energy
-    name: "Sonoff POWR2 00139037F2 Total Daily Energy"
+    name: ${devicename} Total Daily Energy
     power_id: sonoff_power
 
 switch:
   - platform: gpio
-    name: "Sonoff POWR2 00139037F2 Relay"
+    name: ${devicename} Relay
     pin: GPIO12
     id: relay
   - platform: restart
-    name: "Sonoff POWR2 00139037F2 Restart"
+    name: ${devicename} Restart
 
 # Enable time component to reset energy at midnight
 time:
