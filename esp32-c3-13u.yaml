@@ -10,6 +10,8 @@ esphome:
 
 esp32:
   board: esp32-c3-devkitm-1
+  framework:
+    version: latest
 
 wifi:
   ssid: !secret wifi_ssid
