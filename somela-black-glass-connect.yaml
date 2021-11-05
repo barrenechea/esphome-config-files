@@ -41,8 +41,8 @@ ota:
   password: !secret ota_password
 
 uart:
-  rx_pin: GPIO13
-  tx_pin: GPIO15
+  rx_pin: GPIO18
+  tx_pin: GPIO19
   baud_rate: 9600
 
 # Register the Tuya MCU connection
