@@ -52,7 +52,7 @@ climate:
     #switch_datapoint: 6
     target_temperature_datapoint: 7
     current_temperature_datapoint: 10
-    hysteresis: -2
+    hysteresis: 1
     visual:
       min_temperature: 5
       max_temperature: 50
