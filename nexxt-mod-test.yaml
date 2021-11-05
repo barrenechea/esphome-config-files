@@ -36,14 +36,14 @@ ota:
 
 status_led:
   pin:
-    number: GPIO1
+    number: RX
     inverted: True
 
 binary_sensor:
   - platform: gpio
     name: ${devicename} Button
     pin:
-      number: GPIO9
+      number: GPIO1
       mode: INPUT_PULLUP
       inverted: true
     on_press:
@@ -52,7 +52,7 @@ binary_sensor:
 output:
   - platform: ledc
     pin:
-      number: GPIO3
+      number: GPIO9
       inverted: true
     id: red_led
 
@@ -70,4 +70,4 @@ switch:
   - platform: gpio
     id: GP32
     name: ${devicename} GPIO32
-    pin: GPIO32
+    pin: GPIO2
