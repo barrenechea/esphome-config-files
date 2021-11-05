@@ -8,7 +8,7 @@ esp32:
   board: esp32-c3-devkitm-1
   framework:
     type: esp-idf
-    version: recommended
+    version: latest
     # Custom sdkconfig options
     sdkconfig_options:
       CONFIG_COMPILER_OPTIMIZATION_SIZE: y
@@ -19,8 +19,9 @@ wifi:
 
 # Sets up Bluetooth LE (Only on ESP32) to allow the user
 # to provision wifi credentials to the device.
-esp32_improv:
-  authorizer: none
+# DISABLED --- esptool does not recognize BT on esp32c3
+#esp32_improv:
+#  authorizer: none
 
 # Make sure logging is not using the serial port
 logger:
@@ -34,7 +35,7 @@ api:
 ota:
   password: !secret ota_password
 
-status_led:
-  pin:
-    number: GPIO1
-    inverted: True
+#status_led:
+#  pin:
+#    number: GPIO1
+#    inverted: True
