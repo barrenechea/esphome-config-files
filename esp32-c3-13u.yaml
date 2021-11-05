@@ -3,15 +3,13 @@ substitutions:
 
 esphome:
   name: esp32-c3-13u
+  platformio_options:
+    platform: https://github.com/platformio/platform-espressif32.git#feature/arduino-upstream
+    platform_packages:
+      - framework-arduinoespressif32@https://github.com/espressif/arduino-esp32.git#2.0.0
 
 esp32:
   board: esp32-c3-devkitm-1
-  framework:
-    type: esp-idf
-    version: latest
-    # Custom sdkconfig options
-    #sdkconfig_options:
-    #  CONFIG_COMPILER_OPTIMIZATION_SIZE: y
 
 wifi:
   ssid: !secret wifi_ssid
