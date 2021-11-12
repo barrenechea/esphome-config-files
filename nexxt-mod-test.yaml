@@ -34,10 +34,10 @@ api:
 ota:
   password: !secret ota_password
 
-#status_led:
-#  pin:
-#    number: GPIO20
-#    inverted: True
+status_led:
+  pin:
+    number: GPIO20
+    inverted: True
 
 binary_sensor:
   - platform: gpio
@@ -86,10 +86,10 @@ switch:
     name: ${devicename} Plug - Bottom Right
     pin: GPIO5
     # USB
-#  - platform: gpio
-#    id: usb_top_left
-#    name: ${devicename} USB - Top Left
-#    pin: GPIO8
+  - platform: gpio
+    id: usb_top_left
+    name: ${devicename} USB - Top Left
+    pin: GPIO8
   - platform: gpio
     id: usb_top_right
     name: ${devicename} USB - Top Right
