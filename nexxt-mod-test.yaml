@@ -34,11 +34,6 @@ api:
 ota:
   password: !secret ota_password
 
-status_led:
-  pin:
-    number: GPIO20
-    inverted: True
-
 binary_sensor:
   - platform: gpio
     internal: true
@@ -49,6 +44,7 @@ binary_sensor:
       inverted: true
     on_press:
       - light.toggle: red_led
+      - light.toggle: blue_led
       - switch.toggle: plug_top_left
 
 output:
@@ -59,6 +55,13 @@ output:
       inverted: true
 
 light:
+  - platform: status_led
+    internal: true
+    id: blue_led
+    name: ${devicename} Blue LED
+    pin:
+      number: GPIO20
+      inverted: True
   - platform: binary
     internal: true
     id: red_led
