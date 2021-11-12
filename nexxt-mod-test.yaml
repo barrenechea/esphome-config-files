@@ -46,8 +46,8 @@ binary_sensor:
       number: GPIO1
       mode: INPUT_PULLUP
       inverted: true
-    on_press:
-      - switch.toggle: plug_top_left
+#    on_press:
+#      - switch.toggle: plug_top_left
 
 output:
   - platform: gpio
