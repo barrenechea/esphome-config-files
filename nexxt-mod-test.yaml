@@ -39,7 +39,7 @@ binary_sensor:
     internal: true
     name: ${devicename} Button
     pin:
-      number: GPIO1
+      number: 1
       mode: INPUT_PULLUP
       inverted: true
     on_press:
@@ -51,7 +51,7 @@ output:
   - platform: gpio
     id: red_led_gpio
     pin:
-      number: GPIO9
+      number: 9
       inverted: true
 
 light:
@@ -60,7 +60,7 @@ light:
     id: blue_led
     name: ${devicename} Blue LED
     pin:
-      number: GPIO20
+      number: 20
       inverted: True
   - platform: binary
     internal: true
@@ -78,36 +78,36 @@ switch:
   - platform: gpio
     id: plug_top_left
     name: ${devicename} Plug - Top Left
-    pin: GPIO2
+    pin: 2
   - platform: gpio
     id: plug_top_right
     name: ${devicename} Plug - Top Right
-    pin: GPIO3
+    pin: 3
   - platform: gpio
     id: plug_bottom_left
     name: ${devicename} Plug - Bottom Left
-    pin: GPIO4
+    pin: 4
   - platform: gpio
     id: plug_bottom_right
     name: ${devicename} Plug - Bottom Right
-    pin: GPIO5
+    pin: 5
     # USB
   - platform: gpio
     id: usb_top_left
     name: ${devicename} USB - Top Left
-    pin: GPIO8
+    pin: 8
   - platform: gpio
     id: usb_top_right
     name: ${devicename} USB - Top Right
-    pin: GPIO18
+    pin: 18
   - platform: gpio
     id: usb_bottom_left
     name: ${devicename} USB - Bottom Left
-    pin: GPIO19
+    pin: 19
   - platform: gpio
     id: usb_bottom_right
     name: ${devicename} USB - Bottom Right
     pin:
-      number: GPIO21 # Not working --- TX pin, always on? - ON 2.4v, OFF 0.99v
+      number: 21 # Not working --- TX pin, always on? - ON 2.4v, OFF 0.99v
 #      mode:
 #        pullup: true
