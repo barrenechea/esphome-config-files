@@ -34,10 +34,10 @@ api:
 ota:
   password: !secret ota_password
 
-status_led:
-  pin:
-    number: GPIO20
-    inverted: True
+#status_led:
+#  pin:
+#    number: RX
+#    inverted: True
 
 binary_sensor:
   - platform: gpio
