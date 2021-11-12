@@ -51,14 +51,15 @@ binary_sensor:
       - light.toggle: red_led
 
 output:
-  - platform: gpio
+  - platform: ledc
     id: red_led_gpio
     pin:
       number: GPIO9
+      mode: OUTPUT_OPEN_DRAIN
       inverted: true
 
 light:
-  - platform: binary
+  - platform: monochromatic
     id: red_led
     name: ${devicename} Red LED
     output: red_led_gpio
