@@ -4,7 +4,8 @@ substitutions:
 esphome:
   name: nexxt-mod-test
   platformio_options:
-    platform: https://github.com/platformio/platform-espressif32.git#feature/arduino-upstream
+    #platform: https://github.com/platformio/platform-espressif32#feature/arduino-upstream
+    platform: https://github.com/platformio/platform-espressif32#feature/arduino-idf-master
     platform_packages:
       - framework-arduinoespressif32@https://github.com/espressif/arduino-esp32.git#2.0.0
 
