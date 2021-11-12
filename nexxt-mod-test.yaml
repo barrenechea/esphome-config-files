@@ -49,18 +49,18 @@ binary_sensor:
     on_press:
       - switch.toggle: plug_top_left
 
-#output:
-#  - platform: gpio
-#    pin:
-#      number: GPIO9
-#      inverted: true
-#    id: red_led
+output:
+  - platform: ledc
+    pin:
+      number: GPIO9
+      inverted: true
+    id: red_led
 
-#light:
-#  - platform: binary
-#    name: ${devicename} Red LED
-#    output: red_led
-#    default_transition_length: 300ms
+light:
+  - platform: monochromatic
+    name: ${devicename} Red LED
+    output: red_led
+    default_transition_length: 300ms
 
 switch:
     # Platform controls
