@@ -4,10 +4,9 @@ substitutions:
 esphome:
   name: nexxt-mod-test
   platformio_options:
-    #platform: https://github.com/platformio/platform-espressif32#feature/arduino-upstream
-    platform: https://github.com/platformio/platform-espressif32#feature/arduino-idf-master
+    platform: https://github.com/platformio/platform-espressif32#feature/arduino-idf-master #feature/arduino-upstream
     platform_packages:
-      - framework-arduinoespressif32@https://github.com/espressif/arduino-esp32.git#2.0.0
+      - framework-arduinoespressif32@https://github.com/espressif/arduino-esp32#2.0.0
 
 esp32:
   board: esp32-c3-devkitm-1
@@ -50,18 +49,18 @@ binary_sensor:
     on_press:
       - switch.toggle: plug_top_left
 
-output:
-  - platform: gpio
-    pin:
-      number: GPIO9
-      inverted: true
-    id: red_led
+#output:
+#  - platform: gpio
+#    pin:
+#      number: GPIO9
+#      inverted: true
+#    id: red_led
 
-light:
-  - platform: binary
-    name: ${devicename} Red LED
-    output: red_led
-    #default_transition_length: 300ms
+#light:
+#  - platform: binary
+#    name: ${devicename} Red LED
+#    output: red_led
+#    default_transition_length: 300ms
 
 switch:
     # Platform controls
@@ -87,10 +86,10 @@ switch:
     name: ${devicename} Plug - Top Right
     pin: RX
     # USB
-  #- platform: gpio
-  #  id: usb_top_left
-  #  name: ${devicename} USB - Top Left
-  #  pin: GPIO8
+#  - platform: gpio
+#    id: usb_top_left
+#    name: ${devicename} USB - Top Left
+#    pin: GPIO8
   - platform: gpio
     id: usb_top_right
     name: ${devicename} USB - Top Right
