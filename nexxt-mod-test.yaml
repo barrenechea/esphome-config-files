@@ -86,10 +86,10 @@ switch:
     name: ${devicename} Plug - Top Right
     pin: RX
     # USB
-#  - platform: gpio
-#    id: usb_top_left
-#    name: ${devicename} USB - Top Left
-#    pin: GPIO8
+  - platform: gpio
+    id: usb_top_left
+    name: ${devicename} USB - Top Left
+    pin: GPIO8
   - platform: gpio
     id: usb_top_right
     name: ${devicename} USB - Top Right
