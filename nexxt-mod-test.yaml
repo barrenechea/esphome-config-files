@@ -101,6 +101,7 @@ switch:
   - platform: gpio
     id: usb_bottom_right
     name: ${devicename} USB - Bottom Right
-    pin: GPIO21 # Not working --- TX pin, always on?
-    mode: INPUT_PULLUP
-
+    pin:
+      number: GPIO21 # Not working --- TX pin, always on? - ON 2.4v, OFF 0.99v
+#      mode:
+#        pullup: true
