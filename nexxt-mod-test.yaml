@@ -83,13 +83,13 @@ switch:
     pin: GPIO4
   - platform: gpio
     id: plug_bottom_right
-    name: ${devicename} Plug - Top Right
-    pin: RX
+    name: ${devicename} Plug - Bottom Right
+    pin: GPIO5
     # USB
-  - platform: gpio
-    id: usb_top_left
-    name: ${devicename} USB - Top Left
-    pin: GPIO8
+#  - platform: gpio
+#    id: usb_top_left
+#    name: ${devicename} USB - Top Left
+#    pin: GPIO8
   - platform: gpio
     id: usb_top_right
     name: ${devicename} USB - Top Right
@@ -101,4 +101,4 @@ switch:
   - platform: gpio
     id: usb_bottom_right
     name: ${devicename} USB - Bottom Right
-    pin: TX
+    pin: GPIO21
