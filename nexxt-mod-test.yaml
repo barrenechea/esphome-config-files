@@ -51,19 +51,18 @@ binary_sensor:
       - light.toggle: red_led
 
 output:
-  - platform: ledc
+  - platform: gpio
     id: red_led_gpio
     pin:
       number: GPIO9
-      mode: OUTPUT_OPEN_DRAIN
       inverted: true
 
 light:
-  - platform: monochromatic
+  - platform: binary
     id: red_led
     name: ${devicename} Red LED
     output: red_led_gpio
-#    default_transition_length: 300ms
+#    default_transition_length: 300ms # LEDC not working on C3?
 
 switch:
     # Platform controls
