@@ -41,14 +41,15 @@ status_led:
 
 binary_sensor:
   - platform: gpio
+    internal: true
     name: ${devicename} Button
     pin:
       number: GPIO1
       mode: INPUT_PULLUP
       inverted: true
     on_press:
-      - switch.toggle: plug_top_left
       - light.toggle: red_led
+      - switch.toggle: plug_top_left
 
 output:
   - platform: gpio
@@ -59,10 +60,10 @@ output:
 
 light:
   - platform: binary
+    internal: true
     id: red_led
     name: ${devicename} Red LED
     output: red_led_gpio
-#    default_transition_length: 300ms # LEDC not working on C3?
 
 switch:
     # Platform controls
