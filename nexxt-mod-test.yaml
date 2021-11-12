@@ -102,3 +102,5 @@ switch:
     id: usb_bottom_right
     name: ${devicename} USB - Bottom Right
     pin: GPIO21 # Not working --- TX pin, always on?
+    mode: INPUT_PULLUP
+
