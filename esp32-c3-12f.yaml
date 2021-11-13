@@ -9,7 +9,6 @@ esp32:
   framework:
     version: recommended
     type: esp-idf
-    # Custom sdkconfig options
     sdkconfig_options:
       CONFIG_COMPILER_OPTIMIZATION_SIZE: y
 
@@ -19,6 +18,7 @@ wifi:
 
 # Sets up Bluetooth LE (Only on ESP32) to allow the user
 # to provision wifi credentials to the device.
+# Not working on esp-idf
 #esp32_improv:
 #  authorizer: none
 
@@ -34,7 +34,15 @@ api:
 ota:
   password: !secret ota_password
 
+# Not working on esp-idf
 #status_led:
 #  pin:
-#    number: GPIO1
+#    number: 0
 #    inverted: True
+
+light:
+  - platform: status_led
+    name: "Board state"
+    pin:
+      number: 0
+#      inverted: True
