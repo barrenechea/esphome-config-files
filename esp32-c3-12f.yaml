@@ -4,7 +4,7 @@ substitutions:
 esphome:
   name: esp32-c3-12f
 #  platformio_options:
-#    platform: https://github.com/platformio/platform-espressif32#feature/arduino-idf-master #feature/arduino-upstream
+#    platform: https://github.com/platformio/platform-espressif32#feature/arduino-upstream #feature/arduino-idf-master
 #    platform_packages:
 #      - framework-arduinoespressif32@https://github.com/espressif/arduino-esp32#2.0.0
 
