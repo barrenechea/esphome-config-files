@@ -28,8 +28,8 @@ logger:
 
 # Enable Home Assistant API
 api:
-  encryption:
-    key: !secret api_encryption_key
+#  encryption:
+#    key: !secret api_encryption_key
 
 ota:
   password: !secret ota_password
@@ -40,10 +40,15 @@ ota:
 #    number: 0
 #    inverted: True
 
-light:
-  - platform: status_led
-    name: "Board state"
+output:
+  - platform: ledc
+    id: led
     pin:
       number: 9
       inverted: true
+
+light:
+  - platform: monochromatic
+    name: "Board state"
+    output: led
 
