@@ -44,5 +44,5 @@ light:
   - platform: status_led
     name: "Board state"
     pin:
-      number: 0
+      number: 9
 
