@@ -40,8 +40,8 @@ ota:
 #    number: 0
 #    inverted: True
 
-switch:
-  - platform: gpio
+light:
+  - platform: status_led
     name: "Board state"
     pin:
       number: 0
