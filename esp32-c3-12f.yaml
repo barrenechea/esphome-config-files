@@ -45,4 +45,5 @@ light:
     name: "Board state"
     pin:
       number: 9
+      inverted: true
 
