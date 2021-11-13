@@ -11,7 +11,7 @@ esphome:
 esp32:
   board: esp32-c3-devkitm-1
   framework:
-    version: latest
+    version: recommended
     type: esp-idf
     # Custom sdkconfig options
 #    sdkconfig_options:
