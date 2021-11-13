@@ -7,7 +7,7 @@ esphome:
 esp32:
   board: esp32-c3-devkitm-1
   framework:
-    version: recommended
+    version: latest
     type: esp-idf
     sdkconfig_options:
       CONFIG_COMPILER_OPTIMIZATION_SIZE: y
