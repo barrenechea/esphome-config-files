@@ -1,3 +1,7 @@
+external_components:
+  source: github://SebastianBar/esphome@fix/ledc
+  components: [ledc_new]
+
 substitutions:
   devicename: ESP32-C3-12F
 
@@ -37,15 +41,15 @@ ota:
   password: !secret ota_password
 
 output:
-  - platform: gpio
+  - platform: ledc_new
     id: led
-    #frequency: 1220Hz
-    #channel: 0
+    frequency: 1220Hz
+    channel: 0
     pin:
       number: 9
       inverted: True
 
 light:
-  - platform: binary
+  - platform: monochromatic
     name: "Board LED"
     output: led
