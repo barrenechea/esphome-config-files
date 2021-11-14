@@ -6,7 +6,7 @@ esphome:
   platformio_options:
     platform: https://github.com/platformio/platform-espressif32#feature/arduino-idf-master #feature/arduino-upstream
     platform_packages:
-      - framework-arduinoespressif32@https://github.com/espressif/arduino-esp32#2.0.0
+      - framework-arduinoespressif32@https://github.com/espressif/arduino-esp32#2.0.1
 
 esp32:
   board: esp32-c3-devkitm-1
