@@ -26,8 +26,8 @@ wifi:
 # Sets up Bluetooth LE (Only on ESP32) to allow the user
 # to provision wifi credentials to the device.
 # Not working on esp-idf
-#esp32_improv:
-#  authorizer: none
+esp32_improv:
+  authorizer: none
 
 # Make sure logging is not using the serial port
 logger:
@@ -42,15 +42,13 @@ ota:
   password: !secret ota_password
 
 output:
-  - platform: ledc
+  - platform: gpio
     id: led
-    frequency: 1220Hz
-    channel: 0
     pin:
       number: 9
       inverted: True
 
 light:
-  - platform: monochromatic
+  - platform: binary
     name: "Board LED"
     output: led
