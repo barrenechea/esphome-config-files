@@ -40,6 +40,7 @@ output:
   - platform: ledc
     id: led
     frequency: 1220Hz
+    channel: 0
     pin:
       number: 9
       inverted: True
