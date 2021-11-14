@@ -34,14 +34,14 @@ api:
 ota:
   password: !secret ota_password
 
-status_led:
-  pin:
-    number: 9
-    inverted: True
+output:
+  - platform: ledc
+    id: led
+    pin:
+      number: 9
+      inverted: True
 
-#light:
-#  - platform: status_led
-#    name: "Board state"
-#    pin:
-#      number: 9
-#      inverted: true
+light:
+  - platform: monochromatic
+    name: "Board LED"
+    output: led
