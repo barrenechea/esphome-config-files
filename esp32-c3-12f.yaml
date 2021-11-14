@@ -37,6 +37,7 @@ ota:
 output:
   - platform: ledc
     id: led
+    frequency: 1220Hz
     pin:
       number: 9
       inverted: True
