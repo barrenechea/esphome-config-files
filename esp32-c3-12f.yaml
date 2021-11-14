@@ -4,7 +4,7 @@ substitutions:
 esphome:
   name: esp32-c3-12f
   platformio_options:
-    platform: https://github.com/platformio/platform-espressif32.git#v3.4.0
+    platform: https://github.com/platformio/platform-espressif32#v3.4.0
     platform_packages:
       - framework-arduinoespressif32@https://github.com/espressif/arduino-esp32#2.0.1
 
@@ -23,8 +23,8 @@ wifi:
 # Sets up Bluetooth LE (Only on ESP32) to allow the user
 # to provision wifi credentials to the device.
 # Not working on esp-idf
-esp32_improv:
-  authorizer: none
+#esp32_improv:
+#  authorizer: none
 
 # Make sure logging is not using the serial port
 logger:

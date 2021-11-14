@@ -1,10 +1,11 @@
 substitutions:
   devicename: NEXXT Device
 
+
 esphome:
   name: nexxt-mod-test
   platformio_options:
-    platform: https://github.com/platformio/platform-espressif32#feature/arduino-idf-master #feature/arduino-upstream
+    platform: https://github.com/platformio/platform-espressif32#v3.4.0
     platform_packages:
       - framework-arduinoespressif32@https://github.com/espressif/arduino-esp32#2.0.1
 
@@ -12,6 +13,9 @@ esp32:
   board: esp32-c3-devkitm-1
   framework:
     version: latest
+    type: esp-idf
+    sdkconfig_options:
+      CONFIG_COMPILER_OPTIMIZATION_SIZE: y
 
 wifi:
   ssid: !secret wifi_ssid
@@ -19,8 +23,9 @@ wifi:
 
 # Sets up Bluetooth LE (Only on ESP32) to allow the user
 # to provision wifi credentials to the device.
-esp32_improv:
-  authorizer: none
+# Not working on esp-idf
+#esp32_improv:
+#  authorizer: none
 
 # Make sure logging is not using the serial port
 logger:
