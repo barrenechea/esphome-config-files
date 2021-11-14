@@ -82,35 +82,43 @@ switch:
   - platform: gpio
     id: plug_top_left
     name: ${devicename} Plug - Top Left
+    icon: mdi:power-socket-it
     pin: GPIO2
   - platform: gpio
     id: plug_top_right
     name: ${devicename} Plug - Top Right
+    icon: mdi:power-socket-it
     pin: GPIO3
   - platform: gpio
     id: plug_bottom_left
     name: ${devicename} Plug - Bottom Left
+    icon: mdi:power-socket-it
     pin: GPIO4
   - platform: gpio
     id: plug_bottom_right
     name: ${devicename} Plug - Bottom Right
+    icon: mdi:power-socket-it
     pin: GPIO5
     # USB
   - platform: gpio
     id: usb_top_left
     name: ${devicename} USB - Top Left
+    icon: mdi:usb-port
     pin: GPIO8
   - platform: gpio
     id: usb_top_right
     name: ${devicename} USB - Top Right
+    icon: mdi:usb-port
     pin: GPIO18
   - platform: gpio
     id: usb_bottom_left
     name: ${devicename} USB - Bottom Left
+    icon: mdi:usb-port
     pin: GPIO19
   - platform: gpio
     id: usb_bottom_right
     name: ${devicename} USB - Bottom Right
+    icon: mdi:usb-port
     pin:
       number: GPIO21 # Not working --- TX pin, always on? - ON 2.4v, OFF 0.99v
 #      mode:
