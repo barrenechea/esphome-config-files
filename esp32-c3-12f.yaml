@@ -41,15 +41,15 @@ ota:
   password: !secret ota_password
 
 output:
-  - platform: ledc_new
+  - platform: gpio
     id: led
-    frequency: 1220Hz
-    channel: 0
+#    frequency: 1220Hz
+#    channel: 0
     pin:
       number: 9
       inverted: True
 
 light:
-  - platform: monochromatic
+  - platform: binary
     name: "Board LED"
     output: led
