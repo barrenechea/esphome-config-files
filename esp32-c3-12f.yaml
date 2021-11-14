@@ -1,22 +1,23 @@
-external_components:
-  source: github://SebastianBar/esphome@fix/ledc
-  components: [ledc_new]
-
 substitutions:
   devicename: ESP32-C3-12F
 
 esphome:
   name: esp32-c3-12f
   platformio_options:
-    platform: https://github.com/platformio/platform-espressif32.git#v3.4.0
+    platform: https://github.com/platformio/platform-espressif32.git#feature/arduino-upstream
+    platform_packages:
+      - framework-arduinoespressif32@https://github.com/espressif/arduino-esp32.git#2.0.1
+
+#  platformio_options:
+#    platform: https://github.com/platformio/platform-espressif32.git#v3.4.0
 
 esp32:
   board: esp32-c3-devkitm-1
   framework:
     version: latest
-    type: esp-idf
-    sdkconfig_options:
-      CONFIG_COMPILER_OPTIMIZATION_SIZE: y
+#    type: esp-idf
+#    sdkconfig_options:
+#      CONFIG_COMPILER_OPTIMIZATION_SIZE: y
 
 wifi:
   ssid: !secret wifi_ssid
@@ -41,15 +42,15 @@ ota:
   password: !secret ota_password
 
 output:
-  - platform: gpio
+  - platform: ledc
     id: led
-#    frequency: 1220Hz
-#    channel: 0
+    frequency: 1220Hz
+    channel: 0
     pin:
       number: 9
       inverted: True
 
 light:
-  - platform: binary
+  - platform: monochromatic
     name: "Board LED"
     output: led
