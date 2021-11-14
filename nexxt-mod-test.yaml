@@ -1,7 +1,6 @@
 substitutions:
   devicename: NEXXT Device
 
-
 esphome:
   name: nexxt-mod-test
   platformio_options:
