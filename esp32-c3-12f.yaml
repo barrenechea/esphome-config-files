@@ -4,20 +4,17 @@ substitutions:
 esphome:
   name: esp32-c3-12f
   platformio_options:
-    platform: https://github.com/platformio/platform-espressif32#feature/arduino-idf-master
+    platform: https://github.com/platformio/platform-espressif32.git#v3.4.0
     platform_packages:
-      - framework-arduinoespressif32@https://github.com/espressif/arduino-esp32.git#2.0.1
-
-#  platformio_options:
-#    platform: https://github.com/platformio/platform-espressif32.git#v3.4.0
+      - framework-arduinoespressif32@https://github.com/espressif/arduino-esp32#2.0.1
 
 esp32:
   board: esp32-c3-devkitm-1
   framework:
     version: latest
-#    type: esp-idf
-#    sdkconfig_options:
-#      CONFIG_COMPILER_OPTIMIZATION_SIZE: y
+    type: esp-idf
+    sdkconfig_options:
+      CONFIG_COMPILER_OPTIMIZATION_SIZE: y
 
 wifi:
   ssid: !secret wifi_ssid
