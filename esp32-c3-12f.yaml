@@ -3,15 +3,15 @@ substitutions:
 
 esphome:
   name: esp32-c3-12f
-  platformio_options:
-    platform: https://github.com/platformio/platform-espressif32#v3.4.0
-    platform_packages:
-      - framework-arduinoespressif32@https://github.com/espressif/arduino-esp32#2.0.1
+#  platformio_options:
+#    platform: https://github.com/platformio/platform-espressif32#v3.4.0
+#    platform_packages:
+#      - framework-arduinoespressif32@https://github.com/espressif/arduino-esp32#2.0.1
 
 esp32:
   board: esp32-c3-devkitm-1
   framework:
-    version: latest
+    version: recommended
     type: esp-idf
     sdkconfig_options:
       CONFIG_COMPILER_OPTIMIZATION_SIZE: y
