@@ -3,13 +3,13 @@ substitutions:
 
 esphome:
   name: nexxt-mod-test
-  platformio_options:
-    platform: https://github.com/platformio/platform-espressif32#feature/arduino-upstream
-    platform_packages:
-    - framework-arduinoespressif32 @ https://github.com/espressif/arduino-esp32#2.0.2
 
 esp32:
   board: esp32-c3-devkitm-1
+  framework:
+    type: esp-idf
+    sdkconfig_options:
+      CONFIG_COMPILER_OPTIMIZATION_SIZE: y
 
 wifi:
   ssid: !secret wifi_ssid
