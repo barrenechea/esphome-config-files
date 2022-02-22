@@ -115,5 +115,6 @@ switch:
     icon: mdi:usb-port
     pin:
       number: GPIO21 # Not working --- TX pin, always on? - ON 2.4v, OFF 0.99v
+      drive_strength: 10mA
 #      mode:
 #        pullup: true
