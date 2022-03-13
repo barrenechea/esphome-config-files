@@ -1,6 +1,6 @@
-#external_components:
-#  source: github://SebastianBar/esphome@tuya-new
-#  components: [tuya_new]
+external_components:
+  source: github://SebastianBar/esphome@tuya-new
+  components: [tuya_new]
 
 esphome:
   name: somela-black-glass-connect
@@ -51,16 +51,16 @@ uart:
   baud_rate: 9600
 
 # Register the Tuya MCU connection
-tuya:
+tuya_new:
 
 climate:
-  - platform: tuya
+  - platform: tuya_new
     name: "Somela Black Glass Connect"
     switch_datapoint: 0
     #switch_datapoint: 6
     target_temperature_datapoint: 7
     current_temperature_datapoint: 10
-    #hysteresis: 1
+    hysteresis: 1
     visual:
       min_temperature: 5
       max_temperature: 50
