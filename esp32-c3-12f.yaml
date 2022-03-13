@@ -22,8 +22,8 @@ wifi:
 # Sets up Bluetooth LE (Only on ESP32) to allow the user
 # to provision wifi credentials to the device.
 # Not working on esp-idf
-#esp32_improv:
-#  authorizer: none
+esp32_improv:
+  authorizer: none
 
 # Make sure logging is not using the serial port
 logger:
