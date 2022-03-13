@@ -4,16 +4,15 @@ substitutions:
 esphome:
   name: nexxt-mod-test
   platformio_options:
-    board_build.f_cpu: 160000000L
+    flash_mode: dio
 
 esp32:
-  board: esp32-c3-devkitm-1 # esp32doit-devkit-v1
+  board: esp32-c3-devkitm-1
+  variant: ESP32C3
   framework:
     type: esp-idf
     sdkconfig_options:
       CONFIG_FREERTOS_UNICORE: y
-      CONFIG_ESP32_DEFAULT_CPU_FREQ_160: y
-      CONFIG_ESP32_DEFAULT_CPU_FREQ_MHZ: "160"
       CONFIG_COMPILER_OPTIMIZATION_SIZE: y
 
 wifi:
@@ -118,8 +117,4 @@ switch:
     id: usb_bottom_right
     name: ${devicename} USB - Bottom Right
     icon: mdi:usb-port
-    pin:
-      number: GPIO21 # Not working --- TX pin, always on? - ON 2.4v, OFF 0.99v
-      drive_strength: 40mA
-#      mode:
-#        pullup: true
+    pin: GPIO21 # Not working --- TX pin, always on? - ON 2.4v, OFF 0.99v
