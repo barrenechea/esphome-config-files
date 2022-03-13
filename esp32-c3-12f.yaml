@@ -37,14 +37,8 @@ api:
 ota:
   password: !secret ota_password
 
-output:
-  - platform: gpio
-    id: led
-    pin:
-      number: 9
-      inverted: True
-
-light:
-  - platform: binary
-    name: "Board LED"
-    output: led
+# Enable ESPHome status output though TYJW2S PCB LED
+status_led:
+  pin:
+    number: GPIO9
+    inverted: True
