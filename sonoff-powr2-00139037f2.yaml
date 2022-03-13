@@ -1,5 +1,6 @@
 substitutions:
-  devicename: Sonoff POWR2 00139037F2
+  device_name: Sonoff POWR2
+  device_serial: 00139037F2
 
 esphome:
   name: sonoff-powr2-00139037f2
@@ -13,7 +14,7 @@ wifi:
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
-    ssid: ${devicename}
+    ssid: ${device_name} ${device_serial}
     password: hJ3hJJCSlslr
 
 captive_portal:
@@ -46,42 +47,43 @@ binary_sensor:
       number: GPIO0
       mode: INPUT_PULLUP
       inverted: True
-    name: ${devicename} Button
+    name: ${device_name} ${device_serial} Button
     internal: true
     on_press:
       - switch.toggle: relay
 
 sensor:
   - platform: wifi_signal
-    name: ${devicename} WiFi Signal
+    name: ${device_name} ${device_serial} WiFi Signal
     update_interval: 60s
   - platform: cse7766
     update_interval: 1s
     current:
-      name: ${devicename} Current
+      name: ${device_name} ${device_serial} Current
     voltage:
-      name: ${devicename} Voltage
+      name: ${device_name} ${device_serial} Voltage
     power:
       id: sonoff_power
-      name: ${devicename} Power
+      name: ${device_name} ${device_serial} Power
       filters:
         # Multiplication factor from W to kW is 0.001
+        # Done so it can be measured through HA's Household consumption
         - multiply: 0.001
       unit_of_measurement: kW
       accuracy_decimals: 4
   - platform: total_daily_energy
-    name: ${devicename} Total Daily Energy
+    name: ${device_name} ${device_serial} Total Daily Energy
     power_id: sonoff_power
 
 switch:
   - platform: gpio
-    name: ${devicename} Relay
+    name: ${device_name} ${device_serial} Relay
     pin: GPIO12
     id: relay
   - platform: restart
-    name: ${devicename} Restart
+    name: ${device_name} ${device_serial} Restart
 
 # Enable time component to reset energy at midnight
 time:
-  - platform: sntp
+  - platform: sntp # could be platform: homeassistant
     timezone: America/Santiago

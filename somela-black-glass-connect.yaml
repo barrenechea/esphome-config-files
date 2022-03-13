@@ -5,12 +5,16 @@ external_components:
 esphome:
   name: somela-black-glass-connect
   platformio_options:
-    platform: https://github.com/platformio/platform-espressif32.git#feature/arduino-upstream
-    platform_packages:
-      - framework-arduinoespressif32@https://github.com/espressif/arduino-esp32.git#2.0.0
+    board_build.flash_mode: dio
 
 esp32:
   board: esp32-c3-devkitm-1
+  variant: ESP32C3
+  framework:
+    type: esp-idf
+    sdkconfig_options:
+      CONFIG_FREERTOS_UNICORE: y
+      CONFIG_COMPILER_OPTIMIZATION_SIZE: y
 
 wifi:
   ssid: !secret wifi_ssid
@@ -21,13 +25,12 @@ wifi:
     ssid: "Somela-Black-Glass-Connect"
     password: "3lUaUnNEk4hN"
 
-captive_portal:
+# captive_portal:
 
 # Make sure logging is not using the serial port
 logger:
   #level: VERY_VERBOSE
   #level: VERBOSE
-  baud_rate: 0
 
 # Enable Home Assistant API
 api:
@@ -37,9 +40,14 @@ api:
 ota:
   password: !secret ota_password
 
+# Enable ESPHome status output though TYJW2S PCB LED
+status_led:
+  pin:
+    number: GPIO10
+
 uart:
-  rx_pin: GPIO18
-  tx_pin: GPIO19
+  rx_pin: GPIO4
+  tx_pin: GPIO9
   baud_rate: 9600
 
 # Register the Tuya MCU connection
