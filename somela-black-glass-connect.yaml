@@ -29,6 +29,7 @@ wifi:
 #esp32_improv:
 #  authorizer: none
 
+# Enable logging
 logger:
 
 # Enable Home Assistant API
