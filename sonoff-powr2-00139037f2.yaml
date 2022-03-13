@@ -1,6 +1,6 @@
 substitutions:
-  device_name: Sonoff POWR2
-  device_serial: 00139037F2
+  devicename: Sonoff POWR2
+  deviceserial: 00139037F2
 
 esphome:
   name: sonoff-powr2-00139037f2
@@ -14,7 +14,7 @@ wifi:
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
-    ssid: ${device_name} ${device_serial}
+    ssid: ${devicename} ${deviceserial}
     password: hJ3hJJCSlslr
 
 captive_portal:
@@ -47,24 +47,24 @@ binary_sensor:
       number: GPIO0
       mode: INPUT_PULLUP
       inverted: True
-    name: ${device_name} ${device_serial} Button
+    name: ${devicename} ${deviceserial} Button
     internal: true
     on_press:
       - switch.toggle: relay
 
 sensor:
   - platform: wifi_signal
-    name: ${device_name} ${device_serial} WiFi Signal
+    name: ${devicename} ${deviceserial} WiFi Signal
     update_interval: 60s
   - platform: cse7766
     update_interval: 1s
     current:
-      name: ${device_name} ${device_serial} Current
+      name: ${devicename} ${deviceserial} Current
     voltage:
-      name: ${device_name} ${device_serial} Voltage
+      name: ${devicename} ${deviceserial} Voltage
     power:
       id: sonoff_power
-      name: ${device_name} ${device_serial} Power
+      name: ${devicename} ${deviceserial} Power
       filters:
         # Multiplication factor from W to kW is 0.001
         # Done so it can be measured through HA's Household consumption
@@ -72,16 +72,16 @@ sensor:
       unit_of_measurement: kW
       accuracy_decimals: 4
   - platform: total_daily_energy
-    name: ${device_name} ${device_serial} Total Daily Energy
+    name: ${devicename} ${deviceserial} Total Daily Energy
     power_id: sonoff_power
 
 switch:
   - platform: gpio
-    name: ${device_name} ${device_serial} Relay
+    name: ${devicename} ${deviceserial} Relay
     pin: GPIO12
     id: relay
   - platform: restart
-    name: ${device_name} ${device_serial} Restart
+    name: ${devicename} ${deviceserial} Restart
 
 # Enable time component to reset energy at midnight
 time:
