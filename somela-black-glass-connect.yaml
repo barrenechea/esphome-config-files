@@ -1,6 +1,7 @@
 external_components:
-  source: github://SebastianBar/esphome@tuya-new
+  source: github://SebastianBar/esphome@tuya-new2
   components: [tuya_new]
+  refresh: 60s
 
 esphome:
   name: somela-black-glass-connect
