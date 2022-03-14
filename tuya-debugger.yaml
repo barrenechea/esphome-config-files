@@ -1,5 +1,5 @@
 esphome:
-  name: tuya_debugger
+  name: tuya-debugger
 
 esp32:
   board: wemos_d1_mini32
