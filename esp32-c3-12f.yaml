@@ -28,9 +28,8 @@ wifi:
 esp32_improv:
   authorizer: none
 
-# Make sure logging is not using the serial port
+# Enable logging
 logger:
-  baud_rate: 0
 
 # Enable Home Assistant API
 api:
