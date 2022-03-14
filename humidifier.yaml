@@ -1,5 +1,5 @@
 esphome:
-  name: humidifier
+  name: tuya_debugger
 
 esp32:
   board: wemos_d1_mini32
@@ -22,9 +22,18 @@ api:
 
 ota:
 
-switch:
-  - platform: gpio
-    name: "Humidifier"
-    pin: 2
-    inverted: False
-    id: humidifierSwitch
+# Logs hex strings by default
+uart:
+  - id: esp_cpu
+    rx_pin: 22
+    baud_rate: 9600
+    debug:
+      direction: RX
+      dummy_receiver: false
+
+  - id: tuya_mcu
+    rx_pin: 21
+    baud_rate: 9600
+    debug:
+      direction: RX
+      dummy_receiver: false
