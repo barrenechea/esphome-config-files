@@ -14,6 +14,7 @@ esp32_improv:
 
 # Enable logging
 logger:
+  level: VERY_VERBOSE
 
 # Enable Home Assistant API
 api:
