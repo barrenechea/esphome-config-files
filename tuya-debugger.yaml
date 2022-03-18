@@ -27,14 +27,8 @@ ota:
 uart:
   - id: esp_cpu
     rx_pin: 22
+    tx_pin: 21
     baud_rate: 9600
     debug:
-      direction: RX
-      dummy_receiver: false
-
-  - id: tuya_mcu
-    rx_pin: 21
-    baud_rate: 9600
-    debug:
-      direction: RX
+      direction: both
       dummy_receiver: false
