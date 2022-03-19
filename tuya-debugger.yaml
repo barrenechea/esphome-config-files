@@ -30,13 +30,13 @@ debug:
 uart:
   - id: treadmill_controller
     rx_pin: 21
-    baud_rate: 9600
+    baud_rate: 230400
     debug:
       direction: RX
       dummy_receiver: false
   - id: treadmill_console
     rx_pin: 22
-    baud_rate: 9600
+    baud_rate: 230400
     debug:
       direction: RX
       dummy_receiver: false
