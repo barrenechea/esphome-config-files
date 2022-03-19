@@ -14,7 +14,7 @@ esp32_improv:
 
 # Enable logging
 logger:
-  level: VERY_VERBOSE
+  # level: VERY_VERBOSE
 
 # Enable Home Assistant API
 api:
@@ -25,10 +25,15 @@ ota:
 
 # Logs hex strings by default
 uart:
-  - id: esp_cpu
-    rx_pin: 22
-    tx_pin: 21
+  - id: treadmill_controller
+    rx_pin: 21
     baud_rate: 9600
     debug:
-      direction: both
+      direction: RX
+      dummy_receiver: false
+  - id: treadmill_console
+    rx_pin: 22
+    baud_rate: 9600
+    debug:
+      direction: RX
       dummy_receiver: false
