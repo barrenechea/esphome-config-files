@@ -14,7 +14,7 @@ esp32_improv:
 
 # Enable logging
 logger:
-  # level: VERY_VERBOSE
+  level: debug
 
 # Enable Home Assistant API
 api:
@@ -22,6 +22,9 @@ api:
     key: !secret api_encryption_key
 
 ota:
+
+debug:
+  update_interval: 1s
 
 # Logs hex strings by default
 uart:
