@@ -29,13 +29,13 @@ debug:
 # Logs hex strings by default
 uart:
   - id: treadmill_controller
-    rx_pin: 21
+    rx_pin: 9
     baud_rate: 230400
     debug:
       direction: RX
       dummy_receiver: false
   - id: treadmill_console
-    rx_pin: 22
+    rx_pin: 16
     baud_rate: 230400
     debug:
       direction: RX
