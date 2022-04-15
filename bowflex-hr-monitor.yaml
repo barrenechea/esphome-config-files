@@ -1,0 +1,28 @@
+esphome:
+  name: bowflex-hr-monitor
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+  password: "9d4ec6063937203a52901cf7bfe08e35"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Bowflex-Hr-Monitor"
+    password: "ajaYVqIY9UfF"
+
+captive_portal:
+    
