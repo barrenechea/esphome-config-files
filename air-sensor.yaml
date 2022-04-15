@@ -10,8 +10,8 @@ wifi:
 
 # Sets up Bluetooth LE (Only on ESP32) to allow the user
 # to provision wifi credentials to the device.
-esp32_improv:
-  authorizer: none
+#esp32_improv:
+#  authorizer: none
 
 # Enable logging
 logger:
@@ -48,3 +48,12 @@ sensor:
       name: Temperature
     humidity:
       name: Humidity
+  - platform: template
+    name: "Heart_rate"
+    id: Heart_rate
+    
+esp32_ble_tracker:
+  on_ble_service_data_advertise:
+    - service_uuid: 2A37
+      then:
+       - lambda: 'id(Heart_rate).publish_state(x[0]);'  
