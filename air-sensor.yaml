@@ -51,6 +51,9 @@ sensor:
   - platform: template
     name: "Heart_rate"
     id: Heart_rate
+  - platform: ble_rssi
+    mac_address: C9:3E:F1:9B:E7:77
+    name: "Heart_rate_rssi"
     
 esp32_ble_tracker:
   on_ble_service_data_advertise:
