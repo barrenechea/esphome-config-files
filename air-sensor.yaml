@@ -35,6 +35,12 @@ i2c:
   scan: True
   id: bus_a
 
+esp32_ble_tracker:
+
+ble_client:
+  - mac_address: C9:3E:F1:9B:E7:77
+    id: heart_rate_monitor
+
 sensor:
   - platform: senseair
     co2:
@@ -48,15 +54,18 @@ sensor:
       name: Temperature
     humidity:
       name: Humidity
-  - platform: template
-    name: "Heart_rate"
-    id: Heart_rate
-  - platform: ble_rssi
-    mac_address: C9:3E:F1:9B:E7:77
-    name: "Heart_rate_rssi"
-    
-esp32_ble_tracker:
-  on_ble_service_data_advertise:
-    - service_uuid: 2A37
-      then:
-       - lambda: 'id(Heart_rate).publish_state(x[0]);'  
+  - platform: ble_client
+    ble_client_id: heart_rate_monitor
+    id: heart_rate_measurement
+    name: "Heart rate measurement"
+    service_uuid: '180d'
+    characteristic_uuid: '2a37'
+    notify: true
+    lambda: |-
+      uint16_t heart_rate_measurement = x[1];
+      if (x[0] & 1) {
+          heart_rate_measurement += (x[2] << 8);
+      }
+      return (float)heart_rate_measurement;
+    icon: 'mdi:heart'
+    unit_of_measurement: 'bpm'   
