@@ -9,7 +9,6 @@ wifi:
   password: !secret wifi_password
 
 logger:
-  baud_rate: 0
 
 api:
   encryption:
@@ -24,3 +23,19 @@ ble_client:
   - id: heart_rate_monitor
     mac_address: C9:3E:F1:9B:E7:77
 
+sensor:
+  - platform: ble_client
+    ble_client_id: heart_rate_monitor
+    id: heart_rate_measurement
+    name: "Heart rate measurement"
+    service_uuid: '180d'
+    characteristic_uuid: '2a37'
+    notify: true
+    lambda: |-
+      uint16_t heart_rate_measurement = x[1];
+      if (x[0] & 1) {
+          heart_rate_measurement += (x[2] << 8);
+      }
+      return (float)heart_rate_measurement;
+    icon: 'mdi:heart'
+    unit_of_measurement: 'bpm'
