@@ -22,15 +22,17 @@ ble_client:
     mac_address: C9:3E:F1:9B:E7:77
 
 sensor:
-  - platform: ble_rssi
-    name: "Heart rate RSSI"
+  - name: Heart rate RSSI
+    platform: ble_rssi
     mac_address: C9:3E:F1:9B:E7:77
-  - platform: ble_client
+  - id: heart_rate_measurement
+    name: Heart rate
+    icon: mdi:heart
+    platform: ble_client
     ble_client_id: heart_rate_monitor
-    id: heart_rate_measurement
-    name: "Heart rate measurement"
-    service_uuid: '180d'
-    characteristic_uuid: '2a37'
+    unit_of_measurement: bpm
+    service_uuid: 180D
+    characteristic_uuid: 2A37
     notify: true
     lambda: |-
       uint16_t heart_rate_measurement = x[1];
@@ -38,5 +40,3 @@ sensor:
           heart_rate_measurement += (x[2] << 8);
       }
       return (float)heart_rate_measurement;
-    icon: 'mdi:heart'
-    unit_of_measurement: 'bpm'
