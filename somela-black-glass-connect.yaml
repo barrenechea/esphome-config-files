@@ -1,5 +1,5 @@
 external_components:
-  source: github://SebastianBar/esphome@tuya-new2
+  source: github://SebastianBar/esphome@tuya-new
   components: [tuya_new]
   refresh: 60s
 
