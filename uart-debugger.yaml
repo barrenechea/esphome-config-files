@@ -44,7 +44,7 @@ sensor:
       on_value:
         then:
           lambda: |-
-            ESP_LOGI("desk_command", "Sensor value: %f", id(desk_command).state);
+            ESP_LOGI("desk_command", "Received command: 0x%02X", (uint8_t)id(desk_command).state);
             if(!id(keypad_switch).state)
             {
               ESP_LOGI("desk_command", "executing...");
