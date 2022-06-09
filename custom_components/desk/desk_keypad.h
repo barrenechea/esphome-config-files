@@ -20,9 +20,14 @@ private:
 
   int messageLength = 0;
   uint8_t collectedBytes[4];
-  Command mReturnCommand;
-  Command lastPublished = Command::Status;
+  Command lastCommand;
+  uint32_t lastUpdate = 0;
   bool validMessage = false;
+
+  // a little bit of fun
+  uint32_t lastAnimUpdate = 0;
+  uint8_t animIndex = 0;
+  uint8_t anim[6] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20};
 
 public:
   DeskKeypad(UARTComponent *parent) : UARTDevice(parent) {}
@@ -38,7 +43,7 @@ public:
   {
     while (this->available())
     {
-      byte incomingByte = this->read();
+      uint8_t incomingByte = this->read();
 
       if (incomingByte == REQUEST_HEADER)
       {
@@ -60,16 +65,36 @@ public:
       if (validMessage)
       {
         // command is in the third received byte
-        mReturnCommand = (Command)collectedBytes[2];
+        Command returnCommand = (Command)collectedBytes[2];
 
-        if (mReturnCommand != lastPublished)
+        if (returnCommand != lastCommand)
         {
-          this->publish_state(mReturnCommand);
-          lastPublished = mReturnCommand;
+          this->publish_state(returnCommand);
+          lastCommand = returnCommand;
+          lastUpdate = millis();
         }
 
-        // Send something to the screen so it doesn't think we are dead
-        this->write_array({0x5A, 0x00, 0x00, 0x00, 0x01, 0x01});
+        // run ack against the screen
+        if (millis() - lastUpdate > 5000)
+        {
+          // send screen to sleep
+          this->write_array({0x5A, 0xFF, 0xFF, 0xFF, 0x00, 0xFD});
+          continue;
+        }
+
+        // update the animation only if at least 66ms have passed since the last update
+        if (millis() - lastAnimUpdate > 66)
+        {
+          animIndex = (animIndex + 1) % 6;
+          lastAnimUpdate = millis();
+        }
+
+        uint8_t packet[6] = {0x5A, anim[animIndex], anim[animIndex], anim[animIndex], 0x00};
+
+        // attach the checksum
+        packet[5] = (packet[1] + packet[2] + packet[3] + packet[4]) & 0xff;
+
+        this->write_array(packet, 6);
       }
     }
   }
