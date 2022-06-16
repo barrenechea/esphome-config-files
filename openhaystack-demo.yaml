@@ -1,7 +1,8 @@
 external_components:
-  source: github://SebastianBar/esphome@openhaystack
-  components: [openhaystack]
-  refresh: 60s
+  - source:
+      type: local
+      path: custom_components
+    components: [openhaystack]
 
 esphome:
   name: openhaystack-demo
