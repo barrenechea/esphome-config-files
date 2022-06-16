@@ -28,5 +28,4 @@ ota:
   password: !secret ota_password
 
 openhaystack:
-  uuid: 41B9C8F0-A9BA-4C93-8A9A-E7F0D7AF16B8
   key: !secret openhaystack_key

@@ -37,12 +37,20 @@ static const esp_ble_ibeacon_head_t IBEACON_COMMON_HEAD = {
     .flags = {0x02, 0x01, 0x06}, .length = 0x1A, .type = 0xFF, .company_id = 0x004C, .beacon_type = 0x1502};
 
 void OpenHaystack::dump_config() {
-  ESP_LOGCONFIG(TAG, "ESP32 BLE Beacon:");
-  ESP_LOGCONFIG(TAG, "  Major: %u, Minor: %u", this->major_, this->minor_);
+  ESP_LOGCONFIG(TAG, "OpenHaystack:");
+  ESP_LOGCONFIG(TAG,
+                "  Advertising Key (first six digits): %02X %02X %02X %02X %02X %02X",
+                this->advertising_key_[0],
+                this->advertising_key_[1],
+                this->advertising_key_[2],
+                this->advertising_key_[3],
+                this->advertising_key_[4],
+                this->advertising_key_[5]
+  );
 }
 
 void OpenHaystack::setup() {
-  ESP_LOGCONFIG(TAG, "Setting up ESP32 BLE beacon...");
+  ESP_LOGCONFIG(TAG, "Setting up OpenHaystack device...");
   global_openhaystack = this;
 
   xTaskCreatePinnedToCore(OpenHaystack::ble_core_task,
@@ -124,7 +132,7 @@ void OpenHaystack::ble_setup() {
 
   esp_ble_ibeacon_t ibeacon_adv_data;
   memcpy(&ibeacon_adv_data.ibeacon_head, &IBEACON_COMMON_HEAD, sizeof(esp_ble_ibeacon_head_t));
-  memcpy(&ibeacon_adv_data.ibeacon_vendor.proximity_uuid, global_openhaystack->uuid_.data(),
+  memcpy(&ibeacon_adv_data.ibeacon_vendor.proximity_uuid, global_openhaystack->advertising_key_.data(),
          sizeof(ibeacon_adv_data.ibeacon_vendor.proximity_uuid));
   ibeacon_adv_data.ibeacon_vendor.minor = ENDIAN_CHANGE_U16(global_openhaystack->minor_);
   ibeacon_adv_data.ibeacon_vendor.major = ENDIAN_CHANGE_U16(global_openhaystack->major_);

@@ -32,7 +32,7 @@ typedef struct {
 
 class OpenHaystack : public Component {
  public:
-  explicit OpenHaystack(const std::array<uint8_t, 16> &uuid) : uuid_(uuid) {}
+  explicit OpenHaystack(const std::array<uint8_t, 28> &advertising_key) : advertising_key_(advertising_key) {}
 
   void setup() override;
   void dump_config() override;
@@ -46,7 +46,7 @@ class OpenHaystack : public Component {
   static void ble_core_task(void *params);
   static void ble_setup();
 
-  std::array<uint8_t, 16> uuid_;
+  std::array<uint8_t, 28> advertising_key_;
   uint16_t major_{};
   uint16_t minor_{};
 };
