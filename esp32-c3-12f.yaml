@@ -1,5 +1,7 @@
-substitutions:
-  devicename: ESP32-C3-12F
+external_components:
+  source: github://SebastianBar/esphome@openhaystack
+  components: [openhaystack]
+  refresh: 60s
 
 esphome:
   name: esp32-c3-12f
@@ -11,6 +13,7 @@ esp32:
   variant: ESP32C3
   framework:
     type: esp-idf
+    version: latest
     sdkconfig_options:
       CONFIG_FREERTOS_UNICORE: y
       CONFIG_COMPILER_OPTIMIZATION_SIZE: y
@@ -23,10 +26,6 @@ esp32:
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
-
-# Sets up provisioning Wi-Fi credentials to the device over BLE
-esp32_improv:
-  authorizer: none
 
 # Enable logging
 logger:
@@ -44,3 +43,8 @@ status_led:
   pin:
     number: GPIO9
     inverted: True
+
+openhaystack:
+  type: IBEACON
+  uuid: 41B9C8F0-A9BA-4C93-8A9A-E7F0D7AF16B8
+  key: !secret openhaystack_key
