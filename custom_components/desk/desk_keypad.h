@@ -3,8 +3,8 @@
 
 class DeskKeypad : public Component, public UARTDevice, public Sensor
 {
-private:
-  static const uint8_t REQUEST_HEADER = 0xA5;
+protected:
+  static const byte REQUEST_HEADER = 0xA5;
   enum Command
   {
     Status = 0x00,
@@ -19,15 +19,15 @@ private:
   };
 
   int messageLength = 0;
-  uint8_t collectedBytes[4];
-  Command lastCommand;
+  byte collectedBytes[4];
+  byte lastCommand;
   uint32_t lastUpdate = 0;
   bool validMessage = false;
 
   // a little bit of fun
   uint32_t lastAnimUpdate = 0;
-  uint8_t animIndex = 0;
-  uint8_t anim[6] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20};
+  byte animIndex = 0;
+  byte anim[6] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20};
 
 public:
   DeskKeypad(UARTComponent *parent) : UARTDevice(parent) {}
@@ -43,39 +43,37 @@ public:
   {
     while (this->available())
     {
-      uint8_t incomingByte = this->read();
+      byte incomingByte = this->read();
 
-      if (incomingByte == REQUEST_HEADER)
+      if (incomingByte == this->REQUEST_HEADER)
       {
-        messageLength = 0;
-        validMessage = false;
+        this->messageLength = 0;
+        this->validMessage = false;
       }
 
-      if (messageLength < 4)
+      if (this->messageLength < 4)
       {
-        collectedBytes[messageLength] = incomingByte;
-        messageLength++;
+        this->collectedBytes[this->messageLength] = incomingByte;
+        this->messageLength++;
       }
       else
       {
         // Check if checksum is correct
-        validMessage = (incomingByte == ((collectedBytes[1] + collectedBytes[2] + collectedBytes[3]) & 0xff));
+        this->validMessage = (incomingByte == ((this->collectedBytes[1] + this->collectedBytes[2] + this->collectedBytes[3]) & 0xff));
       }
 
-      if (validMessage)
+      if (this->validMessage)
       {
         // command is in the third received byte
-        Command returnCommand = (Command)collectedBytes[2];
-
-        if (returnCommand != lastCommand)
+        if (this->collectedBytes[2] != this->lastCommand)
         {
-          this->publish_state(returnCommand);
-          lastCommand = returnCommand;
-          lastUpdate = millis();
+          this->publish_state(this->collectedBytes[2]);
+          this->lastCommand = this->collectedBytes[2];
+          this->lastUpdate = millis();
         }
 
         // run ack against the screen
-        if (millis() - lastUpdate > 5000)
+        if (millis() - this->lastUpdate > 5000)
         {
           // send screen to sleep
           this->write_array({0x5A, 0xFF, 0xFF, 0xFF, 0x00, 0xFD});
@@ -83,13 +81,13 @@ public:
         }
 
         // update the animation only if at least 66ms have passed since the last update
-        if (millis() - lastAnimUpdate > 66)
+        if (millis() - this->lastAnimUpdate > 66)
         {
-          animIndex = (animIndex + 1) % 6;
-          lastAnimUpdate = millis();
+          animIndex = (this->animIndex + 1) % 6;
+          this->lastAnimUpdate = millis();
         }
 
-        uint8_t packet[6] = {0x5A, anim[animIndex], anim[animIndex], anim[animIndex], 0x00};
+        byte packet[6] = {0x5A, this->anim[this->animIndex], this->anim[this->animIndex], this->anim[this->animIndex], 0x00};
 
         // attach the checksum
         packet[5] = (packet[1] + packet[2] + packet[3] + packet[4]) & 0xff;
