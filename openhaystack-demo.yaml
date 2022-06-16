@@ -10,17 +10,6 @@ esphome:
 
 esp32:
   board: wemos_d1_mini32
-  framework:
-    type: esp-idf
-    version: latest
-    sdkconfig_options:
-      CONFIG_FREERTOS_UNICORE: y
-      CONFIG_COMPILER_OPTIMIZATION_SIZE: y
-      # Specific to Bluetooth usage
-      CONFIG_BT_BLE_50_FEATURES_SUPPORTED: y
-      CONFIG_BT_BLE_42_FEATURES_SUPPORTED: y
-      # Payload size fix - Extend Watchdog timeout, should be "pre-flashed"
-      CONFIG_ESP_TASK_WDT_TIMEOUT_S: "10"
 
 wifi:
   ssid: !secret wifi_ssid
