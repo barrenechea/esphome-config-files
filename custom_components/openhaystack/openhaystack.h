@@ -2,33 +2,12 @@
 
 #include "esphome/core/component.h"
 
+#ifdef USE_ESP32
+
 #include <esp_gap_ble_api.h>
 
 namespace esphome {
 namespace openhaystack {
-
-// NOLINTNEXTLINE(modernize-use-using)
-typedef struct {
-  uint8_t flags[3];
-  uint8_t length;
-  uint8_t type;
-  uint16_t company_id;
-  uint16_t beacon_type;
-} __attribute__((packed)) esp_ble_ibeacon_head_t;
-
-// NOLINTNEXTLINE(modernize-use-using)
-typedef struct {
-  uint8_t proximity_uuid[16];
-  uint16_t major;
-  uint16_t minor;
-  uint8_t measured_power;
-} __attribute__((packed)) esp_ble_ibeacon_vendor_t;
-
-// NOLINTNEXTLINE(modernize-use-using)
-typedef struct {
-  esp_ble_ibeacon_head_t ibeacon_head;
-  esp_ble_ibeacon_vendor_t ibeacon_vendor;
-} __attribute__((packed)) esp_ble_ibeacon_t;
 
 class OpenHaystack : public Component {
  public:
@@ -51,3 +30,5 @@ extern OpenHaystack *global_openhaystack;
 
 }  // namespace openhaystack
 }  // namespace esphome
+
+#endif

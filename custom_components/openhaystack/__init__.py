@@ -29,7 +29,6 @@ CONFIG_SCHEMA = cv.All(
     _validate_key,
 )
 
-
 async def to_code(config):
     encoded_adv_pub_key = config[CONF_KEY]
     adv_pub_key = base64.b64decode(encoded_adv_pub_key).hex()

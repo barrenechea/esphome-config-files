@@ -1,6 +1,8 @@
 #include "openhaystack.h"
 #include "esphome/core/log.h"
 
+#ifdef USE_ESP32
+
 #include <nvs_flash.h>
 #include <freertos/FreeRTOS.h>
 #include <esp_bt_main.h>
@@ -19,25 +21,56 @@ namespace openhaystack {
 
 static const char *const TAG = "openhaystack";
 
+/** Random device address */
+static esp_bd_addr_t rnd_addr = { 0xFF, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF };
+
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 static esp_ble_adv_params_t ble_adv_params = {
-    .adv_int_min = 0x20,
-    .adv_int_max = 0x40,
+    .adv_int_min = 0x0640, // 1s
+    .adv_int_max = 0x0C80, // 2s
     .adv_type = ADV_TYPE_NONCONN_IND,
-    .own_addr_type = BLE_ADDR_TYPE_PUBLIC,
+    .own_addr_type = BLE_ADDR_TYPE_RANDOM,
     .peer_addr = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
     .peer_addr_type = BLE_ADDR_TYPE_PUBLIC,
     .channel_map = ADV_CHNL_ALL,
     .adv_filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_ANY,
 };
 
+/** Advertisement payload */
+static uint8_t ble_adv_data[31] = {
+    0x1e, /* Length (30) */
+    0xff, /* Manufacturer Specific Data (type 0xff) */
+    0x4c, 0x00, /* Company ID (Apple) */
+    0x12, 0x19, /* Offline Finding type and length */
+    0x00, /* State */
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, /* First two bits */
+    0x00, /* Hint (0x00) */
+  };
+
 #define ENDIAN_CHANGE_U16(x) ((((x) &0xFF00) >> 8) + (((x) &0xFF) << 8))
 
-static const esp_ble_ibeacon_head_t IBEACON_COMMON_HEAD = {
-    .flags = {0x02, 0x01, 0x06}, .length = 0x1A, .type = 0xFF, .company_id = 0x004C, .beacon_type = 0x1502};
+void set_addr_from_key(esp_bd_addr_t addr, uint8_t *public_key) {
+	addr[0] = public_key[0] | 0b11000000;
+	addr[1] = public_key[1];
+	addr[2] = public_key[2];
+	addr[3] = public_key[3];
+	addr[4] = public_key[4];
+	addr[5] = public_key[5];
+}
+
+void set_payload_from_key(uint8_t *payload, uint8_t *public_key) {
+    /* copy last 22 bytes */
+	memcpy(&payload[7], &public_key[6], 22);
+	/* append two bits of public key */
+	payload[29] = public_key[0] >> 6;
+}
 
 void OpenHaystack::dump_config() {
   ESP_LOGCONFIG(TAG, "OpenHaystack:");
+  ESP_LOGCONFIG(TAG, "  Bluetooth MAC: %02X:%02X:%02X:%02X:%02X:%02X", rnd_addr[0], rnd_addr[1], rnd_addr[2], rnd_addr[3], rnd_addr[4], rnd_addr[5]);
   ESP_LOGCONFIG(TAG,
                 "  Advertising Key (first six digits): %02X %02X %02X %02X %02X %02X",
                 this->advertising_key_[0],
@@ -124,21 +157,22 @@ void OpenHaystack::ble_setup() {
     ESP_LOGE(TAG, "esp_bluedroid_enable failed: %d", err);
     return;
   }
+
+  set_addr_from_key(rnd_addr, global_openhaystack->advertising_key_.data());
+  set_payload_from_key(ble_adv_data, global_openhaystack->advertising_key_.data());
+
   err = esp_ble_gap_register_callback(OpenHaystack::gap_event_handler);
   if (err != ESP_OK) {
     ESP_LOGE(TAG, "esp_ble_gap_register_callback failed: %d", err);
     return;
   }
+  err = esp_ble_gap_set_rand_addr(rnd_addr);
+  if (err != ESP_OK) {
+    ESP_LOGE(TAG, "esp_ble_gap_set_rand_addr failed: %s", esp_err_to_name(err));
+    return;
+  }
 
-  esp_ble_ibeacon_t ibeacon_adv_data;
-  memcpy(&ibeacon_adv_data.ibeacon_head, &IBEACON_COMMON_HEAD, sizeof(esp_ble_ibeacon_head_t));
-  memcpy(&ibeacon_adv_data.ibeacon_vendor.proximity_uuid, global_openhaystack->advertising_key_.data(),
-         sizeof(ibeacon_adv_data.ibeacon_vendor.proximity_uuid));
-  ibeacon_adv_data.ibeacon_vendor.minor = ENDIAN_CHANGE_U16(100);
-  ibeacon_adv_data.ibeacon_vendor.major = ENDIAN_CHANGE_U16(1000);
-  ibeacon_adv_data.ibeacon_vendor.measured_power = 0xC5;
-
-  esp_ble_gap_config_adv_data_raw((uint8_t *) &ibeacon_adv_data, sizeof(ibeacon_adv_data));
+  esp_ble_gap_config_adv_data_raw((uint8_t *) &ble_adv_data, sizeof(ble_adv_data));
 }
 
 void OpenHaystack::gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {
@@ -176,3 +210,5 @@ OpenHaystack *global_openhaystack = nullptr;  // NOLINT(cppcoreguidelines-avoid-
 
 }  // namespace openhaystack
 }  // namespace esphome
+
+#endif
