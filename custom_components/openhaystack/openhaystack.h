@@ -38,17 +38,12 @@ class OpenHaystack : public Component {
   void dump_config() override;
   float get_setup_priority() const override;
 
-  void set_major(uint16_t major) { this->major_ = major; }
-  void set_minor(uint16_t minor) { this->minor_ = minor; }
-
  protected:
   static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param);
   static void ble_core_task(void *params);
   static void ble_setup();
 
   std::array<uint8_t, 28> advertising_key_;
-  uint16_t major_{};
-  uint16_t minor_{};
 };
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)

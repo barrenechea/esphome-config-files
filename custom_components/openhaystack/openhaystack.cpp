@@ -134,8 +134,8 @@ void OpenHaystack::ble_setup() {
   memcpy(&ibeacon_adv_data.ibeacon_head, &IBEACON_COMMON_HEAD, sizeof(esp_ble_ibeacon_head_t));
   memcpy(&ibeacon_adv_data.ibeacon_vendor.proximity_uuid, global_openhaystack->advertising_key_.data(),
          sizeof(ibeacon_adv_data.ibeacon_vendor.proximity_uuid));
-  ibeacon_adv_data.ibeacon_vendor.minor = ENDIAN_CHANGE_U16(global_openhaystack->minor_);
-  ibeacon_adv_data.ibeacon_vendor.major = ENDIAN_CHANGE_U16(global_openhaystack->major_);
+  ibeacon_adv_data.ibeacon_vendor.minor = ENDIAN_CHANGE_U16(100);
+  ibeacon_adv_data.ibeacon_vendor.major = ENDIAN_CHANGE_U16(1000);
   ibeacon_adv_data.ibeacon_vendor.measured_power = 0xC5;
 
   esp_ble_gap_config_adv_data_raw((uint8_t *) &ibeacon_adv_data, sizeof(ibeacon_adv_data));

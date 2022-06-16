@@ -11,9 +11,6 @@ CONFLICTS_WITH = ["esp32_ble_tracker", "esp32_ble_beacon"]
 openhaystack_ns = cg.esphome_ns.namespace("openhaystack")
 OpenHaystack = openhaystack_ns.class_("OpenHaystack", cg.Component)
 
-CONF_MAJOR = "major"
-CONF_MINOR = "minor"
-
 def _validate_key(value):
     try:
         key = base64.b64decode(value[CONF_KEY])
@@ -27,9 +24,7 @@ def _validate_key(value):
 CONFIG_SCHEMA = cv.All(
     cv.Schema({
         cv.GenerateID(): cv.declare_id(OpenHaystack),
-        cv.Optional(CONF_KEY): cv.string,
-        cv.Optional(CONF_MAJOR, default=10167): cv.uint16_t,
-        cv.Optional(CONF_MINOR, default=61958): cv.uint16_t,
+        cv.Required(CONF_KEY): cv.string,
     }).extend(cv.COMPONENT_SCHEMA),
     _validate_key,
 )
@@ -41,8 +36,6 @@ async def to_code(config):
     adv_pub_key_arr = [int(adv_pub_key[i:i+2], 16) for i in range(0, len(adv_pub_key), 2)]
     var = cg.new_Pvariable(config[CONF_ID], adv_pub_key_arr)
     await cg.register_component(var, config)
-    cg.add(var.set_major(config[CONF_MAJOR]))
-    cg.add(var.set_minor(config[CONF_MINOR]))
 
     if CORE.using_esp_idf:
         add_idf_sdkconfig_option("CONFIG_BT_ENABLED", True)
