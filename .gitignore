@@ -4,3 +4,4 @@
 !custom_components/*/*
 !*.yaml
 secrets.yaml
+__pycache__
