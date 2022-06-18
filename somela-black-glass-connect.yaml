@@ -19,7 +19,7 @@ esp32:
       # Specific to Bluetooth usage
       CONFIG_BT_BLE_50_FEATURES_SUPPORTED: y
       CONFIG_BT_BLE_42_FEATURES_SUPPORTED: y
-      # Payload size fix - Extend Watchdog timeout, should be "pre-flashed"
+      # Payload size fix - Extend Watchdog timeout
       CONFIG_ESP_TASK_WDT_TIMEOUT_S: "10"
 
 wifi:

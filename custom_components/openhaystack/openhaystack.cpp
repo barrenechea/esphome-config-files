@@ -33,8 +33,6 @@ static esp_ble_adv_params_t ble_adv_params = {
     .adv_filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_ANY,
 };
 
-#define ENDIAN_CHANGE_U16(x) ((((x) &0xFF00) >> 8) + (((x) &0xFF) << 8))
-
 void OpenHaystack::dump_config() {
   ESP_LOGCONFIG(TAG, "OpenHaystack:");
   ESP_LOGCONFIG(TAG,
