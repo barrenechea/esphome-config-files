@@ -27,6 +27,7 @@ esp32:
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
+  fast_connect: true
 
 # Sets up provisioning Wi-Fi credentials to the device over BLE
 esp32_improv:
