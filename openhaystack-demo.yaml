@@ -1,7 +1,5 @@
 external_components:
-  - source:
-      type: local
-      path: custom_components
+  - source: github://pr#3584
     components: [openhaystack]
 
 esphome:
