@@ -51,12 +51,14 @@ status_led:
     number: GPIO10
 
 uart:
+  id: uart0
   rx_pin: GPIO4
   tx_pin: GPIO9
   baud_rate: 9600
 
 # Register the Tuya MCU connection
 tuya_new:
+  uart_id: uart0
 
 climate:
   - platform: tuya_new
