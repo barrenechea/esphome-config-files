@@ -72,10 +72,11 @@ public:
           this->lastUpdate = millis();
         }
 
-        // run ack against the screen
+        // --- run ack against the screen logic ---
+
+        // "timeout": send screen into deep sleep mode after 5 seconds
         if (millis() - this->lastUpdate > 5000)
         {
-          // send screen to sleep
           this->write_array({0x5A, 0xFF, 0xFF, 0xFF, 0x00, 0xFD});
           continue;
         }

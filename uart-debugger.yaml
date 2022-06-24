@@ -1,7 +1,7 @@
 esphome:
   name: "uart-debugger"
   includes:
-    - custom_components/desk/desk_keypad.h
+    - components/desk/desk_keypad.h
 
 esp32:
   board: wemos_d1_mini32

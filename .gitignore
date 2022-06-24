@@ -1,7 +1,7 @@
 *
-!custom_components
-!custom_components/*
-!custom_components/*/*
+!components
+!components/*
+!components/*/*
 !*.yaml
 secrets.yaml
 __pycache__
