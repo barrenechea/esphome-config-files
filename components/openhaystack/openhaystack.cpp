@@ -11,6 +11,7 @@
 #include <esp_gap_ble_api.h>
 #include <cstring>
 #include "esphome/core/hal.h"
+#include "esphome/core/helpers.h"
 
 #ifdef USE_ARDUINO
 #include <esp32-hal-bt.h>
@@ -34,30 +35,21 @@ static esp_ble_adv_params_t ble_adv_params = {
 };
 
 void OpenHaystack::dump_config() {
-  ESP_LOGCONFIG(TAG, "OpenHaystack:");
-  ESP_LOGCONFIG(TAG,
-                "  Bluetooth MAC: %02X:%02X:%02X:%02X:%02X:%02X",
-                this->random_address_[0],
-                this->random_address_[1],
-                this->random_address_[2],
-                this->random_address_[3],
-                this->random_address_[4],
-                this->random_address_[5]
-  );
-  ESP_LOGCONFIG(TAG,
-                "  Advertising Key (first six digits): %02X %02X %02X %02X %02X %02X",
-                this->advertising_key_[0],
-                this->advertising_key_[1],
-                this->advertising_key_[2],
-                this->advertising_key_[3],
-                this->advertising_key_[4],
-                this->advertising_key_[5]
-  );
+  ESP_LOGCONFIG(TAG, "OpenHaystack %d Keys, switching interval %d seconds", this->advertising_keys.size(), this->interval_);
+  for (int i=0; i<this->advertising_keys.size(); i++) {
+    std::array<uint8_t, 6> mac;
+    for (int j=0; j<6; j++) mac[j]=advertising_keys[i][j];
+    mac[0] |= 0b11000000;
+    ESP_LOGCONFIG(TAG,
+                "  Advertising Key %d -> MAC %s KEY %s", i, format_hex_pretty(mac.data(),6).c_str(), format_hex_pretty(this->advertising_keys[i].data(), this->advertising_keys[i].size()).c_str()
+    );
+  }
 }
 
 void OpenHaystack::setup() {
   ESP_LOGCONFIG(TAG, "Setting up OpenHaystack device...");
   global_openhaystack = this;
+  current_key=0;
 
   xTaskCreatePinnedToCore(OpenHaystack::ble_core_task,
                           "ble_task",  // name
@@ -71,11 +63,39 @@ void OpenHaystack::setup() {
 
 float OpenHaystack::get_setup_priority() const { return setup_priority::BLUETOOTH; }
 void OpenHaystack::ble_core_task(void *params) {
+  int seconds = global_openhaystack->interval_;
+
   ble_setup();
+  select_key();
 
   while (true) {
     delay(1000);  // NOLINT
+    if (global_openhaystack->advertising_keys.size()>1) {
+      if (seconds>0) {
+        seconds--;
+      } else {
+        seconds = global_openhaystack->interval_;
+        global_openhaystack->current_key++;
+        if (global_openhaystack->current_key>=global_openhaystack->advertising_keys.size()) global_openhaystack->current_key=0;
+        select_key();
+      }
+    }
   }
+}
+
+void OpenHaystack::select_key() {
+  esp_err_t err;
+
+  set_addr_from_key(global_openhaystack->random_address_, global_openhaystack->advertising_keys[global_openhaystack->current_key].data());
+  ESP_LOGI(TAG, "Switching to advertising key %d MAC %s", global_openhaystack->current_key, format_hex_pretty(global_openhaystack->random_address_,6).c_str());
+  set_payload_from_key(global_openhaystack->adv_data_, global_openhaystack->advertising_keys[global_openhaystack->current_key].data());
+  esp_ble_gap_stop_advertising();
+  err = esp_ble_gap_set_rand_addr(global_openhaystack->random_address_);
+  if (err != ESP_OK) {
+    ESP_LOGE(TAG, "esp_ble_gap_set_rand_addr failed: %s", esp_err_to_name(err));
+    return;
+  }
+  esp_ble_gap_config_adv_data_raw((uint8_t *) &global_openhaystack->adv_data_, sizeof(global_openhaystack->adv_data_));
 }
 
 void OpenHaystack::set_addr_from_key(esp_bd_addr_t addr, uint8_t *public_key) {
@@ -147,21 +167,11 @@ void OpenHaystack::ble_setup() {
     return;
   }
 
-  set_addr_from_key(global_openhaystack->random_address_, global_openhaystack->advertising_key_.data());
-  set_payload_from_key(global_openhaystack->adv_data_, global_openhaystack->advertising_key_.data());
-
   err = esp_ble_gap_register_callback(OpenHaystack::gap_event_handler);
   if (err != ESP_OK) {
     ESP_LOGE(TAG, "esp_ble_gap_register_callback failed: %d", err);
     return;
   }
-  err = esp_ble_gap_set_rand_addr(global_openhaystack->random_address_);
-  if (err != ESP_OK) {
-    ESP_LOGE(TAG, "esp_ble_gap_set_rand_addr failed: %s", esp_err_to_name(err));
-    return;
-  }
-
-  esp_ble_gap_config_adv_data_raw((uint8_t *) &global_openhaystack->adv_data_, sizeof(global_openhaystack->adv_data_));
 }
 
 void OpenHaystack::gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {
@@ -171,6 +181,8 @@ void OpenHaystack::gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_c
       err = esp_ble_gap_start_advertising(&ble_adv_params);
       if (err != ESP_OK) {
         ESP_LOGE(TAG, "esp_ble_gap_start_advertising failed: %d", err);
+      } else {
+        ESP_LOGD(TAG, "BLE started advertising successfully");
       }
       break;
     }

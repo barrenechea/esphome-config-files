@@ -5,14 +5,16 @@
 #ifdef USE_ESP32
 
 #include <esp_gap_ble_api.h>
+#include <vector>
 
 namespace esphome {
 namespace openhaystack {
 
 class OpenHaystack : public Component {
  public:
-  explicit OpenHaystack(const std::array<uint8_t, 28> &advertising_key) : advertising_key_(advertising_key) {}
-
+  explicit OpenHaystack() { advertising_keys.reserve(100); }
+  void add_adv_key(const std::array<uint8_t, 28> &advertising_key) { advertising_keys.push_back(advertising_key); }
+  void set_switch_key_interval(int interval) { interval_ = interval; }
   void setup() override;
   void dump_config() override;
   float get_setup_priority() const override;
@@ -20,11 +22,14 @@ class OpenHaystack : public Component {
  protected:
   static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param);
   static void ble_core_task(void *params);
+  static void select_key();
   static void set_addr_from_key(esp_bd_addr_t addr, uint8_t *public_key);
   static void set_payload_from_key(uint8_t *payload, uint8_t *public_key);
   static void ble_setup();
 
-  std::array<uint8_t, 28> advertising_key_;
+  std::vector<std::array<uint8_t, 28>> advertising_keys;
+  int current_key;
+  int interval_=3600;
   esp_bd_addr_t random_address_ = {0xFF, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
   uint8_t adv_data_[31] = {
     0x1e, /* Length (30) */
