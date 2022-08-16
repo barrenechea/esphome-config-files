@@ -71,9 +71,7 @@ void OpenHaystack::ble_core_task(void *params) {
   while (true) {
     delay(1000);  // NOLINT
     if (global_openhaystack->advertising_keys.size()>1) {
-      if (seconds>0) {
-        seconds--;
-      } else {
+      if (--seconds<=0) {
         seconds = global_openhaystack->interval_;
         global_openhaystack->current_key++;
         if (global_openhaystack->current_key>=global_openhaystack->advertising_keys.size()) global_openhaystack->current_key=0;
