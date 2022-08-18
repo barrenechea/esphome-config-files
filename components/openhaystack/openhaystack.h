@@ -1,6 +1,7 @@
 #pragma once
 
 #include "esphome/core/component.h"
+#include "esphome/core/preferences.h"
 
 #ifdef USE_ESP32
 
@@ -15,6 +16,7 @@ class OpenHaystack : public Component {
   explicit OpenHaystack() { advertising_keys.reserve(100); }
   void add_adv_key(const std::array<uint8_t, 28> &advertising_key) { advertising_keys.push_back(advertising_key); }
   void set_switch_key_interval(int interval) { interval_ = interval; }
+  void set_save_key_index(bool value) { save_key_index_ = value; }
   void setup() override;
   void dump_config() override;
   float get_setup_priority() const override;
@@ -27,9 +29,12 @@ class OpenHaystack : public Component {
   static void set_payload_from_key(uint8_t *payload, uint8_t *public_key);
   static void ble_setup();
 
+  ESPPreferenceObject curr_key_saver;
+
   std::vector<std::array<uint8_t, 28>> advertising_keys;
   int current_key;
   int interval_=3600;
+  bool save_key_index_ = false;
   esp_bd_addr_t random_address_ = {0xFF, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
   uint8_t adv_data_[31] = {
     0x1e, /* Length (30) */

@@ -35,7 +35,8 @@ static esp_ble_adv_params_t ble_adv_params = {
 };
 
 void OpenHaystack::dump_config() {
-  ESP_LOGCONFIG(TAG, "OpenHaystack %d Keys, switching interval %d seconds", this->advertising_keys.size(), this->interval_);
+  ESP_LOGCONFIG(TAG, "OpenHaystack %d Keys, switching interval %d seconds, current key index %d, %ssaving index to flash", this->advertising_keys.size(), this->interval_, this->current_key,
+    this->save_key_index_ ? "" : "NOT ");
   for (int i=0; i<this->advertising_keys.size(); i++) {
     std::array<uint8_t, 6> mac;
     for (int j=0; j<6; j++) mac[j]=advertising_keys[i][j];
@@ -49,7 +50,17 @@ void OpenHaystack::dump_config() {
 void OpenHaystack::setup() {
   ESP_LOGCONFIG(TAG, "Setting up OpenHaystack device...");
   global_openhaystack = this;
-  current_key=0;
+  this->curr_key_saver = global_preferences->make_preference<int>(fnv1_hash("openhaystack_current_key"));
+  if (this->save_key_index_) {
+    if (!this->curr_key_saver.load(&current_key))
+      current_key=0;
+    if (current_key<0)
+      current_key=0;
+    if (current_key>=advertising_keys.size())
+      current_key=advertising_keys.size()-1;
+  } else {
+    current_key=0;
+  }
 
   xTaskCreatePinnedToCore(OpenHaystack::ble_core_task,
                           "ble_task",  // name
@@ -76,6 +87,8 @@ void OpenHaystack::ble_core_task(void *params) {
         global_openhaystack->current_key++;
         if (global_openhaystack->current_key>=global_openhaystack->advertising_keys.size()) global_openhaystack->current_key=0;
         select_key();
+      if (global_openhaystack->save_key_index_)
+          global_openhaystack->curr_key_saver.save(&global_openhaystack->current_key);
       }
     }
   }
