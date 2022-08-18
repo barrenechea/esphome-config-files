@@ -75,12 +75,24 @@ void OpenHaystack::setup() {
 float OpenHaystack::get_setup_priority() const { return setup_priority::BLUETOOTH; }
 void OpenHaystack::ble_core_task(void *params) {
   int seconds = global_openhaystack->interval_;
+  int d = 0,h = 0, m = 0, s = 0;
 
   ble_setup();
   select_key();
 
   while (true) {
     delay(1000);  // NOLINT
+    if (++s>59) {
+      s=0;
+      if (++m>59) {
+        m=0;
+        if (++h>23) {
+          h=0;
+          d++;
+        }
+      }
+      ESP_LOGD(TAG,"uptime %d days %d hours %d minutes", d, h, m);
+    }
     if (global_openhaystack->advertising_keys.size()>1) {
       if (--seconds<=0) {
         seconds = global_openhaystack->interval_;
