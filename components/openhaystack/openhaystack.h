@@ -13,27 +13,30 @@ namespace openhaystack {
 
 class OpenHaystack : public Component {
  public:
-  explicit OpenHaystack() { advertising_keys.reserve(100); }
-  void add_adv_key(const std::array<uint8_t, 28> &advertising_key) { advertising_keys.push_back(advertising_key); }
-  void set_switch_key_interval(int interval) { interval_ = interval; }
-  void set_save_key_index(bool value) { save_key_index_ = value; }
+  explicit OpenHaystack() { this->advertising_keys_.reserve(100); }
+  void add_adv_key(const std::array<uint8_t, 28> &advertising_key) { this->advertising_keys_.push_back(advertising_key); }
+  void set_switch_key_interval(int interval) { this->interval_ = interval; }
+  void set_save_key_index(bool value) { this->save_key_index_ = value; }
   void setup() override;
+  void loop() override;
   void dump_config() override;
   float get_setup_priority() const override;
 
  protected:
   static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param);
-  static void ble_core_task(void *params);
-  static void select_key();
+  void select_key();
   static void set_addr_from_key(esp_bd_addr_t addr, uint8_t *public_key);
   static void set_payload_from_key(uint8_t *payload, uint8_t *public_key);
   static void ble_setup();
 
-  ESPPreferenceObject curr_key_saver;
+  ESPPreferenceObject curr_key_saver_;
 
-  std::vector<std::array<uint8_t, 28>> advertising_keys;
-  int current_key;
+  std::vector<std::array<uint8_t, 28>> advertising_keys_;
+  int current_key_;
   int interval_=3600;
+  uint32_t lastmillis_;
+  int s_=0;
+  int seconds_;
   bool save_key_index_ = false;
   esp_bd_addr_t random_address_ = {0xFF, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
   uint8_t adv_data_[31] = {
@@ -49,9 +52,6 @@ class OpenHaystack : public Component {
     0x00, /* Hint (0x00) */
   };
 };
-
-// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-extern OpenHaystack *global_openhaystack;
 
 }  // namespace openhaystack
 }  // namespace esphome

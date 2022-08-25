@@ -35,90 +35,81 @@ static esp_ble_adv_params_t ble_adv_params = {
 };
 
 void OpenHaystack::dump_config() {
-  ESP_LOGCONFIG(TAG, "OpenHaystack %d Keys, switching interval %d seconds, current key index %d, %ssaving index to flash", this->advertising_keys.size(), this->interval_, this->current_key,
+  ESP_LOGCONFIG(TAG, "OpenHaystack %d Keys, switching interval %d seconds_, current key index %d, %ssaving index to flash", this->advertising_keys_.size(), this->interval_, this->current_key_,
     this->save_key_index_ ? "" : "NOT ");
-  for (int i=0; i<this->advertising_keys.size(); i++) {
+  for (int i=0; i<this->advertising_keys_.size(); i++) {
     std::array<uint8_t, 6> mac;
-    for (int j=0; j<6; j++) mac[j]=advertising_keys[i][j];
+    for (int j=0; j<6; j++) mac[j]=this->advertising_keys_[i][j];
     mac[0] |= 0b11000000;
     ESP_LOGCONFIG(TAG,
-                "  Advertising Key %d -> MAC %s KEY %s", i, format_hex_pretty(mac.data(),6).c_str(), format_hex_pretty(this->advertising_keys[i].data(), this->advertising_keys[i].size()).c_str()
+                "  Advertising Key %d -> MAC %s KEY %s", i, format_hex_pretty(mac.data(),6).c_str(), format_hex_pretty(this->advertising_keys_[i].data(), this->advertising_keys_[i].size()).c_str()
     );
   }
 }
 
 void OpenHaystack::setup() {
   ESP_LOGCONFIG(TAG, "Setting up OpenHaystack device...");
-  global_openhaystack = this;
-  this->curr_key_saver = global_preferences->make_preference<int>(fnv1_hash("openhaystack_current_key"));
+  this->current_key_=0;
+  this->curr_key_saver_ = global_preferences->make_preference<int>(fnv1_hash("openhaystack_current_key_"));
   if (this->save_key_index_) {
-    if (!this->curr_key_saver.load(&current_key))
-      current_key=0;
-    if (current_key<0)
-      current_key=0;
-    if (current_key>=advertising_keys.size())
-      current_key=advertising_keys.size()-1;
-  } else {
-    current_key=0;
+    if (this->curr_key_saver_.load(&this->current_key_))
+    {
+      this->current_key_++;
+      if (this->current_key_>=this->advertising_keys_.size() || this->current_key_<0)
+        this->current_key_=0;
+      this->curr_key_saver_.save(&this->current_key_);
+    } else {
+      this->current_key_=0;
+    }
   }
+  ble_setup();
+  select_key();
+  this->lastmillis_=millis();
+  this->seconds_=this->interval_;
+}
 
-  xTaskCreatePinnedToCore(OpenHaystack::ble_core_task,
-                          "ble_task",  // name
-                          10000,       // stack size (in words)
-                          nullptr,     // input params
-                          1,           // priority
-                          nullptr,     // Handle, not needed
-                          0            // core
-  );
+void OpenHaystack::loop() {
+  uint32_t curmillis = millis();
+  if (curmillis - this->lastmillis_ >= 1000) {
+    this->lastmillis_=curmillis;
+    if (this->advertising_keys_.size()>1) {
+      if (--this->seconds_<=0) {
+        this->seconds_ = this->interval_;
+        this->current_key_++;
+        if (this->current_key_>=this->advertising_keys_.size()) this->current_key_=0;
+        select_key();
+      if (this->save_key_index_)
+          this->curr_key_saver_.save(&this->current_key_);
+      }
+    }
+    if (++this->s_>59) {
+      this->s_=0;
+      uint64_t secs = esp_timer_get_time() / 1000000L;
+      int minutes = secs / 60;
+      int hours = minutes / 60;
+      minutes -= hours*60;
+      int days = hours / 24;
+      hours -= days*24;
+      ESP_LOGD(TAG,"uptime %d days %d hours %d minutes", days, hours, minutes);
+    }
+  }
 }
 
 float OpenHaystack::get_setup_priority() const { return setup_priority::BLUETOOTH; }
-void OpenHaystack::ble_core_task(void *params) {
-  int seconds = global_openhaystack->interval_;
-  int d = 0,h = 0, m = 0, s = 0;
-
-  ble_setup();
-  select_key();
-
-  while (true) {
-    delay(1000);  // NOLINT
-    if (++s>59) {
-      s=0;
-      if (++m>59) {
-        m=0;
-        if (++h>23) {
-          h=0;
-          d++;
-        }
-      }
-      ESP_LOGD(TAG,"uptime %d days %d hours %d minutes", d, h, m);
-    }
-    if (global_openhaystack->advertising_keys.size()>1) {
-      if (--seconds<=0) {
-        seconds = global_openhaystack->interval_;
-        global_openhaystack->current_key++;
-        if (global_openhaystack->current_key>=global_openhaystack->advertising_keys.size()) global_openhaystack->current_key=0;
-        select_key();
-      if (global_openhaystack->save_key_index_)
-          global_openhaystack->curr_key_saver.save(&global_openhaystack->current_key);
-      }
-    }
-  }
-}
 
 void OpenHaystack::select_key() {
   esp_err_t err;
 
-  set_addr_from_key(global_openhaystack->random_address_, global_openhaystack->advertising_keys[global_openhaystack->current_key].data());
-  ESP_LOGI(TAG, "Switching to advertising key %d MAC %s", global_openhaystack->current_key, format_hex_pretty(global_openhaystack->random_address_,6).c_str());
-  set_payload_from_key(global_openhaystack->adv_data_, global_openhaystack->advertising_keys[global_openhaystack->current_key].data());
+  set_addr_from_key(this->random_address_, this->advertising_keys_[this->current_key_].data());
+  ESP_LOGI(TAG, "Switching to advertising key %d MAC %s", this->current_key_, format_hex_pretty(this->random_address_,6).c_str());
+  set_payload_from_key(this->adv_data_, this->advertising_keys_[this->current_key_].data());
   esp_ble_gap_stop_advertising();
-  err = esp_ble_gap_set_rand_addr(global_openhaystack->random_address_);
+  err = esp_ble_gap_set_rand_addr(this->random_address_);
   if (err != ESP_OK) {
     ESP_LOGE(TAG, "esp_ble_gap_set_rand_addr failed: %s", esp_err_to_name(err));
     return;
   }
-  esp_ble_gap_config_adv_data_raw((uint8_t *) &global_openhaystack->adv_data_, sizeof(global_openhaystack->adv_data_));
+  esp_ble_gap_config_adv_data_raw((uint8_t *) &this->adv_data_, sizeof(this->adv_data_));
 }
 
 void OpenHaystack::set_addr_from_key(esp_bd_addr_t addr, uint8_t *public_key) {
@@ -229,8 +220,6 @@ void OpenHaystack::gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_c
       break;
   }
 }
-
-OpenHaystack *global_openhaystack = nullptr;  // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
 }  // namespace openhaystack
 }  // namespace esphome
