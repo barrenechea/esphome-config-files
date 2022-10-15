@@ -1,0 +1,70 @@
+esphome:
+  name: universal-ir
+
+esp32:
+  board: wemos_d1_mini32
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+# Sets up Bluetooth LE (Only on ESP32) to allow the user
+# to provision wifi credentials to the device.
+esp32_improv:
+  authorizer: none
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+ota:
+
+remote_transmitter:
+  pin: GPIO16
+  carrier_duty_percent: 50%
+
+button:
+  - platform: template
+    name: "On/Off JVC"
+    on_press:
+      - remote_transmitter.transmit_jvc:
+          data: 0x00FF
+  - platform: template
+    name: "On/Off LG"
+    on_press:
+      - remote_transmitter.transmit_lg:
+          data: 0x00FF02FD
+          nbits: 32
+  - platform: template
+    name: "On/Off NEC"
+    on_press:
+      - remote_transmitter.transmit_nec:
+          address: 0xFF00
+          command: 0xBF40
+  - platform: template
+    name: "On/Off Pioneer"
+    on_press:
+      - remote_transmitter.transmit_pioneer:
+          rc_code_1: 0x0040
+  - platform: template
+    name: "On/Off Samsung"
+    on_press:
+      - remote_transmitter.transmit_samsung:
+          data: 0xE0E040BF
+  - platform: template
+    name: "On/Off Samsung"
+    on_press:
+      - remote_transmitter.transmit_samsung:
+          data: 0xE0E040BF
+  - platform: template
+    name: "On/Off Sony"
+    on_press:
+      - remote_transmitter.transmit_sony:
+          data: '0x00000A90'
+          nbits: 12
+          repeat:
+            times: 3
