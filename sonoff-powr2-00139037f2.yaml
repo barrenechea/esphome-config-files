@@ -75,6 +75,14 @@ sensor:
   - platform: total_daily_energy
     name: ${devicename} ${deviceserial} Total Daily Energy
     power_id: sonoff_power
+  - platform: template
+    update_interval: 1s
+    name: ${devicename} ${deviceserial} Power (W)
+    unit_of_measurement: W
+    accuracy_decimals: 2
+    state_class: measurement
+    device_class: power
+    lambda: 'return (id(sonoff_power).state * 1000);'
 
 switch:
   - platform: gpio
