@@ -66,23 +66,20 @@ sensor:
     power:
       id: sonoff_power
       name: ${devicename} ${deviceserial} Power
-      filters:
-        # Multiplication factor from W to kW is 0.001
-        # Done so it can be measured through HA's Household consumption
-        - multiply: 0.001
-      unit_of_measurement: kW
-      accuracy_decimals: 4
-  - platform: total_daily_energy
-    name: ${devicename} ${deviceserial} Total Daily Energy
-    power_id: sonoff_power
+      unit_of_measurement: W
+      accuracy_decimals: 2
   - platform: template
+    id: sonoff_power_kw
     update_interval: 1s
-    name: ${devicename} ${deviceserial} Power (W)
-    unit_of_measurement: W
-    accuracy_decimals: 2
+    name: ${devicename} ${deviceserial} Power (kW)
+    unit_of_measurement: kW
+    accuracy_decimals: 4
     state_class: measurement
     device_class: power
-    lambda: 'return (id(sonoff_power).state * 1000);'
+    lambda: 'return (id(sonoff_power).state / 1000);'
+  - platform: total_daily_energy
+    name: ${devicename} ${deviceserial} Total Daily Energy
+    power_id: sonoff_power_kw
 
 switch:
   - platform: gpio
