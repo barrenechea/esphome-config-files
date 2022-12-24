@@ -29,6 +29,7 @@ sensor:
     name: Heart rate
     icon: mdi:heart
     platform: ble_client
+    type: characteristic
     ble_client_id: heart_rate_monitor
     unit_of_measurement: bpm
     service_uuid: 180D
