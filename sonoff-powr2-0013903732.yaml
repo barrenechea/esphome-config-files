@@ -61,6 +61,7 @@ sensor:
     update_interval: 1s
     current:
       name: ${devicename} ${deviceserial} Current
+      accuracy_decimals: 5
     voltage:
       name: ${devicename} ${deviceserial} Voltage
     power:
