@@ -25,7 +25,6 @@ esp32:
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
-  domain: .home.arpa
   fast_connect: true
 
 # Sets up provisioning Wi-Fi credentials to the device over BLE

@@ -15,7 +15,6 @@ esp32:
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
-  domain: .home.arpa
 
 # Enable logging
 logger:
