@@ -3,19 +3,6 @@ esphome:
 
 esp32:
   board: esp32-s3-devkitc-1
-  framework:
-    type: esp-idf
-    version: latest
-    sdkconfig_options:
-      CONFIG_FREERTOS_UNICORE: y
-      CONFIG_COMPILER_OPTIMIZATION_SIZE: y
-      # Enable WPA3 support
-      CONFIG_WPA_SUITE_B_192: y
-      # Specific to Bluetooth usage
-      CONFIG_BT_BLE_50_FEATURES_SUPPORTED: y
-      CONFIG_BT_BLE_42_FEATURES_SUPPORTED: y
-      # Payload size fix - Extend Watchdog timeout
-      CONFIG_ESP_TASK_WDT_TIMEOUT_S: "10"
 
 # Enable logging
 logger:
@@ -33,7 +20,28 @@ wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
 
-  # Enable fallback hotspot (captive portal) in case wifi connection fails
-  ap:
-    ssid: "Lilygo-T-Dongle-S3"
-    password: "Y1fL0r3p21F5"
+# Sets up provisioning Wi-Fi credentials to the device over BLE
+esp32_improv:
+  authorizer: none
+
+# SPI for Display
+spi:
+  clk_pin: GPIO05
+  mosi_pin: GPIO03
+
+display:
+  - platform: st7735
+    model: "INITR_MINI160X80"
+    reset_pin: GPIO01
+    cs_pin: GPIO04
+    dc_pin: GPIO02
+    rotation: 0
+    device_width: 80
+    device_height: 160
+    col_start: 26
+    row_start: 1
+    eight_bit_color: true
+    update_interval: 5s
+    lambda: |-
+      // Draw a circle in the middle of the display
+      it.filled_circle(it.get_width() / 2, it.get_height() / 2, 20);
