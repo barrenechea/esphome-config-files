@@ -8,7 +8,7 @@ esp32:
   variant: ESP32C3
   framework:
     type: esp-idf
-    version: latest
+    # version: latest
     sdkconfig_options:
       CONFIG_FREERTOS_UNICORE: y
       CONFIG_COMPILER_OPTIMIZATION_SIZE: y
