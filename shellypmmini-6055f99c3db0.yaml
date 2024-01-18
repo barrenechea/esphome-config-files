@@ -93,6 +93,10 @@ sensor:
       name: ${device_name} Current
     power:
       name: ${device_name} Power
+      accuracy_decimals: 2
+    energy:
+      name: ${device_name} Energy
+      accuracy_decimals: 5
     frequency:
       name: ${device_name} Frequency
       accuracy_decimals: 2
