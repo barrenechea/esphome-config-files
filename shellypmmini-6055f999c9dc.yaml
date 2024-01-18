@@ -1,0 +1,31 @@
+esphome:
+  name: shellypmmini-6055f999c9dc
+  friendly_name: shellypmmini-6055f999c9dc
+
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+ota:
+  password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Shellypmmini-6055F999C9Dc"
+    password: "EbOIGBPrpG9Z"
+
+captive_portal:
+    
