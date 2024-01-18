@@ -38,12 +38,31 @@ wifi:
 
 captive_portal:
 
+# Enable ESPHome status output though red LED
+status_led:
+  pin:
+    number: GPIO0
+    inverted: true
+
 uart:
   id: uart_bus
   tx_pin: GPIO6
   rx_pin: GPIO7
   baud_rate: 9600
   stop_bits: 1
+
+binary_sensor:
+  - platform: gpio
+    name: ${device_name} Button
+    pin:
+      number: GPIO1
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+    on_press:
+      then:
+        - logger.log: "Button pressed"
 
 sensor:
   - platform: ntc
