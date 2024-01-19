@@ -100,7 +100,7 @@ sensor:
     frequency:
       name: ${device_name} Frequency
       accuracy_decimals: 2
-    update_interval: 5s
+    update_interval: 1s
 
 # Enable time component to reset energy at midnight
 time:
