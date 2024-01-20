@@ -1,6 +1,6 @@
 substitutions:
-  friendly_name: "Atlas Sensor"
   id: atlas-sensor
+  device_name: Atlas Sensor
 
 esphome:
   name: $id
@@ -12,21 +12,21 @@ esp8266:
 
 switch:
   - platform: restart
-    name: "$friendly_name Restart"
+    name: "$device_name Restart"
   - platform: gpio
     internal: True
     pin: GPIO14
-    name: "$friendly_name pH On"
+    name: "$device_name pH On"
     inverted: no
   - platform: gpio
     internal: True
     pin: GPIO15
-    name: "$friendly_name RTD Temp On"
+    name: "$device_name RTD Temp On"
     inverted: yes
   - platform: gpio
     internal: True
     pin: GPIO12
-    name: "$friendly_name EC On"
+    name: "$device_name EC On"
     inverted: no
 
 i2c:
@@ -37,21 +37,21 @@ i2c:
 sensor:
   - platform: ezo
     id: ph_ezo
-    name: "$friendly_name pH"
+    name: "$device_name pH"
     address: 99
     accuracy_decimals: 2
     unit_of_measurement: "pH"
     update_interval: 10s
   - platform: ezo
     id: ec_ezo
-    name: "$friendly_name EC"
+    name: "$device_name EC"
     address: 100
     accuracy_decimals: 0
     unit_of_measurement: "PPM"
     update_interval: 10s
   - platform: ezo
     id: rtd_ezo
-    name: "$friendly_name RTD Temp"
+    name: "$device_name RTD Temp"
     address: 102
     accuracy_decimals: 2
     unit_of_measurement: "°C"
