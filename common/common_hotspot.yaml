@@ -1,4 +1,4 @@
-<<: !include wifi_failover_hotspot.yaml
-<<: !include ota.yaml
-<<: !include logger.yaml
-<<: !include api.yaml
+<<: !include core/wifi_failover_hotspot.yaml
+<<: !include core/ota.yaml
+<<: !include core/logger.yaml
+<<: !include core/api.yaml
