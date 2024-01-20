@@ -1,8 +1,8 @@
 external_components:
-- source:
-    type: local
-    path: components
-  components: [openhaystack]
+  - source:
+      type: local
+      path: components
+    components: [openhaystack]
 
 esphome:
   name: openhaystack-demo

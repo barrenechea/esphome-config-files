@@ -47,7 +47,7 @@ button:
     name: "On/Off Sony"
     on_press:
       - remote_transmitter.transmit_sony:
-          data: '0x00000A90'
+          data: 0x00000A90
           nbits: 12
           repeat:
             times: 3

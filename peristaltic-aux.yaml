@@ -102,7 +102,7 @@ output:
                   level: !lambda return (0.4 + (0.6 * id(pump4_speed_controller).current_values.get_brightness()));
             else:
               - output.turn_off: pump4_speed_pin
-    
+
   - platform: ledc
     id: pump1_speed_pin
     pin: GPIO26
