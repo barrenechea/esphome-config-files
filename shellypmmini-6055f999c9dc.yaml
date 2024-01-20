@@ -1,10 +1,11 @@
 substitutions:
+  id: shellypmmini-6055f999c9dc
   device_name: Shelly Plus PM Mini
   device_id: 6055f999c9dc
 
 esphome:
-  name: shellypmmini-6055f999c9dc
-  friendly_name: "${device_name} ${device_id}"
+  name: $id
+  friendly_name: "$device_name $device_id"
 
 esp32:
   board: esp32-c3-devkitm-1
@@ -33,7 +34,7 @@ uart:
 
 binary_sensor:
   - platform: gpio
-    name: ${device_name} Button
+    name: $device_name Button
     pin:
       number: GPIO1
       inverted: true
@@ -47,7 +48,7 @@ binary_sensor:
 sensor:
   - platform: ntc
     sensor: temp_resistance_reading
-    name: ${device_name} Temperature
+    name: $device_name Temperature
     unit_of_measurement: "°C"
     accuracy_decimals: 1
     icon: "mdi:thermometer"
@@ -68,17 +69,17 @@ sensor:
   - platform: bl0942
     uart_id: uart_bus
     voltage:
-      name: ${device_name} Voltage
+      name: $device_name Voltage
     current:
-      name: ${device_name} Current
+      name: $device_name Current
     power:
-      name: ${device_name} Power
+      name: $device_name Power
       accuracy_decimals: 2
     energy:
-      name: ${device_name} Energy
+      name: $device_name Energy
       accuracy_decimals: 5
     frequency:
-      name: ${device_name} Frequency
+      name: $device_name Frequency
       accuracy_decimals: 2
     update_interval: 1s
 
