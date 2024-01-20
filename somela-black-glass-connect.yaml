@@ -1,12 +1,15 @@
+substitutions:
+  id: somela-black-glass-connect
+  device_name: Somela Black Glass Connect
+
 external_components:
   source: github://jesserockz/esphome@tuya-new
   components: [tuya_new]
-  refresh: 60s
+  refresh: 1d
 
 esphome:
-  name: somela-black-glass-connect
-  platformio_options:
-    board_build.flash_mode: dio
+  name: $id
+  friendly_name: $device_name
 
 esp32:
   board: esp32-c3-devkitm-1
@@ -32,18 +35,18 @@ status_led:
     number: GPIO10
 
 uart:
-  id: uart0
+  id: uart_0
   rx_pin: GPIO4
   tx_pin: GPIO9
   baud_rate: 9600
 
 # Register the Tuya MCU connection
 tuya_new:
-  uart_id: uart0
+  uart_id: uart_0
 
 climate:
   - platform: tuya_new
-    name: "Somela Black Glass Connect"
+    name: "$device_name Climate"
     switch_datapoint: 0
     #switch_datapoint: 6
     target_temperature_datapoint: 7

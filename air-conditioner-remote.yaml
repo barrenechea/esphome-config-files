@@ -1,3 +1,7 @@
+substitutions:
+  id: air-conditioner-remote
+  device_name: Air Conditioner Remote
+
 esphome:
   name: air-conditioner-remote
 
@@ -12,7 +16,7 @@ remote_transmitter:
 
 climate:
   - platform: tcl112
-    name: "Indoor AC"
+    name: $device_name Indoor AC
     visual:
       min_temperature: 18
       max_temperature: 28

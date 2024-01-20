@@ -1,8 +1,11 @@
 substitutions:
+  id: peristaltic-main
+  device_name: Peristaltic Main
   pwm_frequency: 20000 Hz
 
 esphome:
-  name: peristaltic-main
+  name: $id
+  friendly_name: $device_name
 
 esp32:
   board: wemos_d1_mini32
@@ -150,41 +153,41 @@ output:
 light:
   - platform: monochromatic
     id: pump1_speed_controller
-    name: "Main Pump 1"
+    name: "$device_name Pump 1"
     output: pump1_target_speed
     default_transition_length: 0s
     gamma_correct: 0
   - platform: monochromatic
     id: pump2_speed_controller
-    name: "Main Pump 2"
+    name: "$device_name Pump 2"
     output: pump2_target_speed
     default_transition_length: 0s
     gamma_correct: 0
   - platform: monochromatic
     id: pump3_speed_controller
-    name: "Main Pump 3"
+    name: "$device_name Pump 3"
     output: pump3_target_speed
     default_transition_length: 0s
     gamma_correct: 0
   - platform: monochromatic
     id: pump4_speed_controller
-    name: "Main Pump 4"
+    name: "$device_name Pump 4"
     output: pump4_target_speed
     default_transition_length: 0s
     gamma_correct: 0
 
 switch:
   - platform: restart
-    name: "Peristaltic Main Restart"
+    name: "$device_name Restart"
   - platform: gpio
     pin: GPIO27
-    name: "Enable Main Pumps 1-2"
+    name: "$device_name Enable Pumps 1-2"
   - platform: gpio
     pin: GPIO33
-    name: "Enable Main Pumps 3-4"
+    name: "$device_name Enable Pumps 3-4"
 
   - platform: template
-    name: "Main Pump 1 Reverse"
+    name: "$device_name Pump 1 Reverse"
     id: pump1_reverse
     turn_on_action:
       - output.turn_off: pump1_direction_pin2
@@ -200,7 +203,7 @@ switch:
           state: OFF
 
   - platform: template
-    name: "Main Pump 2 Reverse"
+    name: "$device_name Pump 2 Reverse"
     id: pump2_reverse
     turn_on_action:
       - output.turn_off: pump2_direction_pin2
@@ -216,7 +219,7 @@ switch:
           state: OFF
 
   - platform: template
-    name: "Main Pump 3 Reverse"
+    name: "$device_name Pump 3 Reverse"
     id: pump3_reverse
     turn_on_action:
       - output.turn_off: pump3_direction_pin2
@@ -232,7 +235,7 @@ switch:
           state: OFF
 
   - platform: template
-    name: "Main Pump 4 Reverse"
+    name: "$device_name Pump 4 Reverse"
     id: pump4_reverse
     turn_on_action:
       - output.turn_off: pump4_direction_pin2

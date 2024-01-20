@@ -1,5 +1,10 @@
+substitutions:
+  id: bowflex-hr-monitor
+  device_name: Bowflex Heart Rate Monitor
+
 esphome:
-  name: bowflex-hr-monitor
+  name: $id
+  friendly_name: $device_name
 
 esp32:
   board: wemos_d1_mini32
@@ -13,11 +18,11 @@ ble_client:
     mac_address: C9:3E:F1:9B:E7:77
 
 sensor:
-  - name: Heart rate RSSI
+  - name: $device_name RSSI
     platform: ble_rssi
     mac_address: C9:3E:F1:9B:E7:77
   - id: heart_rate_measurement
-    name: Heart rate
+    name: $device_name Heart Rate
     icon: mdi:heart
     platform: ble_client
     type: characteristic

@@ -1,5 +1,10 @@
+substitutions:
+  id: lilygo-t-dongle-s3
+  device_name: LilyGo T-Dongle S3
+
 esphome:
-  name: lilygo-t-dongle-s3
+  name: $id
+  friendly_name: $device_name
 
 esp32:
   board: esp32-s3-devkitc-1

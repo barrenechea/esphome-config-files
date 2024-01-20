@@ -1,5 +1,10 @@
+substitutions:
+  id: water-valve
+  device_name: Water Valve
+
 esphome:
-  name: water-valve
+  name: $id
+  friendly_name: $device_name
 
 esp32:
   board: wemos_d1_mini32
@@ -9,4 +14,4 @@ esp32:
 switch:
   - platform: gpio
     pin: 25
-    name: "Water Valve"
+    name: "$device_name"

@@ -1,5 +1,10 @@
+substitutions:
+  id: air-sensor
+  device_name: DIY Air Sensor
+
 esphome:
-  name: air-sensor
+  name: $id
+  friendly_name: $device_name
 
 esp32:
   board: wemos_d1_mini32
@@ -20,13 +25,13 @@ i2c:
 sensor:
   - platform: senseair
     co2:
-      name: CO₂
+      name: $device_name CO₂
     update_interval: 30s
   - platform: sht3xd
     i2c_id: bus_a
     address: 0x44
     update_interval: 10s
     temperature:
-      name: Temperature
+      name: $device_name Temperature
     humidity:
-      name: Humidity
+      name: $device_name Humidity

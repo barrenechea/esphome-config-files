@@ -1,5 +1,10 @@
+substitutions:
+  id: uart-debugger
+  device_name: UART Debugger
+
 esphome:
-  name: "uart-debugger"
+  name: $id
+  friendly_name: $device_name
   includes:
     - components/desk/desk_keypad.h
 
@@ -23,7 +28,7 @@ sensor:
       return {desk_keypad_sensor};
     sensors:
       id: "desk_command"
-      name: Desk command
+      name: $device_name Command
       icon: "mdi:counter"
       on_value:
         then:
@@ -61,7 +66,7 @@ sensor:
 
 switch:
   - platform: template
-    name: "Keypad locked"
+    name: $device_name Keypad Lock
     icon: mdi:key
     id: "keypad_switch"
     internal: false

@@ -1,7 +1,10 @@
+substitutions:
+  id: esp32-c3-12f
+  device_name: ESP32-C3-12F
+
 esphome:
-  name: esp32-c3-12f
-  platformio_options:
-    board_build.flash_mode: dio
+  name: $id
+  friendly_name: $device_name
 
 esp32:
   board: esp32-c3-devkitm-1
