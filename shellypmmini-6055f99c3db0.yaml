@@ -1,7 +1,7 @@
 substitutions:
   id: shellypmmini-6055f99c3db0
   device_name: Shelly Plus PM Mini
-  device_id: 6055f99c3db0
+  device_id: "6055F99C3DB0"
 
 esphome:
   name: $id

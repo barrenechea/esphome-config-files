@@ -1,7 +1,7 @@
 substitutions:
   id: sonoff-powr2-0013903732
   device_name: Sonoff POWR2
-  device_id: 0013903732
+  device_id: "0013903732"
 
 esphome:
   name: $id
