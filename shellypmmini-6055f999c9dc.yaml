@@ -16,27 +16,7 @@ esp32:
     advanced:
       ignore_efuse_mac_crc: false
 
-# Enable logging
-logger:
-
-# Enable Home Assistant API
-api:
-  encryption:
-    key: !secret api_encryption_key
-
-ota:
-  password: !secret ota_password
-
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_password
-
-  # Enable fallback hotspot (captive portal) in case wifi connection fails
-  ap:
-    ssid: "${device_name} ${device_id}"
-    password: "gOF6et6qA5Rd"
-
-captive_portal:
+<<: !include common/common_esp32.yaml
 
 # Enable ESPHome status output though red LED
 status_led:

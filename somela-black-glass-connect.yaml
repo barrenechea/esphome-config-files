@@ -24,26 +24,7 @@ esp32:
       # Payload size fix - Extend Watchdog timeout
       CONFIG_ESP_TASK_WDT_TIMEOUT_S: "10"
 
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_password
-  fast_connect: true
-
-# Sets up provisioning Wi-Fi credentials to the device over BLE
-esp32_improv:
-  authorizer: none
-
-# Enable logging
-logger:
-  # level: VERY_VERBOSE
-
-# Enable Home Assistant API
-api:
-  encryption:
-    key: !secret api_encryption_key
-
-ota:
-  password: !secret ota_password
+<<: !include common/common_esp32.yaml
 
 # Enable ESPHome status output though TYJW2S PCB LED
 status_led:

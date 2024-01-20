@@ -1,0 +1,4 @@
+<<: !include wifi.yaml
+<<: !include ota.yaml
+<<: !include logger.yaml
+<<: !include api.yaml
