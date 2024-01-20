@@ -1,9 +1,11 @@
 substitutions:
-  devicename: Sonoff POWR2
-  deviceserial: 0013903732
+  id: sonoff-powr2-0013903732
+  device_name: Sonoff POWR2
+  device_id: 0013903732
 
 esphome:
-  name: sonoff-powr2-0013903732
+  name: $id
+  friendly_name: $device_name $device_id
 
 esp8266:
   board: esp8285
@@ -32,48 +34,47 @@ binary_sensor:
       number: GPIO0
       mode: INPUT_PULLUP
       inverted: True
-    name: ${devicename} ${deviceserial} Button
+    name: $device_name $device_id Button
     internal: true
     on_press:
       - switch.toggle: relay
 
 sensor:
   - platform: wifi_signal
-    name: ${devicename} ${deviceserial} WiFi Signal
+    name: $device_name $device_id WiFi Signal
     update_interval: 60s
   - platform: cse7766
     update_interval: 1s
     current:
-      name: ${devicename} ${deviceserial} Current
+      name: $device_name $device_id Current
       accuracy_decimals: 5
     voltage:
-      name: ${devicename} ${deviceserial} Voltage
+      name: $device_name $device_id Voltage
     power:
       id: sonoff_power
-      name: ${devicename} ${deviceserial} Power
+      name: $device_name $device_id Power
       unit_of_measurement: W
       accuracy_decimals: 2
   - platform: template
     id: sonoff_power_kw
     update_interval: 1s
-    name: ${devicename} ${deviceserial} Power (kW)
+    name: $device_name $device_id Power (kW)
     unit_of_measurement: kW
     accuracy_decimals: 4
     state_class: measurement
     device_class: power
-    lambda: 'return (id(sonoff_power).state / 1000);'
+    lambda: "return (id(sonoff_power).state / 1000);"
   - platform: total_daily_energy
-    name: ${devicename} ${deviceserial} Total Daily Energy
+    name: $device_name $device_id Total Daily Energy
     power_id: sonoff_power_kw
 
 switch:
   - platform: gpio
-    name: ${devicename} ${deviceserial} Relay
+    name: $device_name $device_id Relay
     pin: GPIO12
     id: relay
-    restore_mode: RESTORE_DEFAULT_ON
   - platform: restart
-    name: ${devicename} ${deviceserial} Restart
+    name: $device_name $device_id Restart
 
 # Enable time component to reset energy at midnight
 time:
