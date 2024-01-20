@@ -73,6 +73,7 @@ switch:
     name: $device_name $device_id Relay
     pin: GPIO12
     id: relay
+    restore_mode: RESTORE_DEFAULT_ON
   - platform: restart
     name: $device_name $device_id Restart
 
