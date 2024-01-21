@@ -12,19 +12,30 @@ spi:
   clk_pin: GPIO05
   mosi_pin: GPIO03
 
+time:
+  - platform: sntp # could be platform: homeassistant
+    timezone: America/Santiago
+    id: ha_time
+
+font:
+  - file: "gfonts://Inconsolata"
+    id: inconsolata
+    size: 16
+
 display:
   - platform: st7735
     model: "INITR_MINI160X80"
     reset_pin: GPIO01
     cs_pin: GPIO04
     dc_pin: GPIO02
-    rotation: 0
+    invert_colors: true
+    use_bgr: true
+    rotation: 270
     device_width: 80
     device_height: 160
     col_start: 26
     row_start: 1
     eight_bit_color: true
-    update_interval: 5s
+    update_interval: 1s
     lambda: |-
-      // Draw a circle in the middle of the display
-      it.filled_circle(it.get_width() / 2, it.get_height() / 2, 20);
+      it.printf(3, 30, id(inconsolata), Color(255, 0, 0), id(ha_time).now().strftime("%d-%m-%Y %H:%M:%S").c_str());
