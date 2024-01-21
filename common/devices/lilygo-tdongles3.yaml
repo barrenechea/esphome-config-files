@@ -10,16 +10,40 @@ esphome:
 
 # SPI for Display
 spi:
-  clk_pin: GPIO05
-  mosi_pin: GPIO03
+  - id: display_bus
+    mosi_pin: GPIO03
+    clk_pin: GPIO05
+  - id: rgb_led_bus
+    mosi_pin: GPIO40
+    clk_pin: GPIO39
 
 font:
   - file: "gfonts://Inconsolata"
     id: inconsolata
     size: 16
 
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO00
+      mode: INPUT_PULLUP
+      inverted: true
+    name: $device_name $device_id Button
+    on_press:
+      - logger.log: "Button pressed"
+
+light:
+  - platform: spi_led_strip
+    spi_id: rgb_led_bus
+    num_leds: 1
+    id: rgb_led
+    name: $device_name $device_id RGB LED
+    data_rate: 20MHz
+    restore_mode: RESTORE_DEFAULT_OFF
+
 display:
   - platform: st7735
+    spi_id: display_bus
     model: "INITR_MINI160X80"
     reset_pin: GPIO01
     cs_pin: GPIO04
