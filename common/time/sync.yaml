@@ -1,4 +1,3 @@
 time:
-  - platform: sntp
-    timezone: America/Santiago
+  - platform: homeassistant
     id: device_time
