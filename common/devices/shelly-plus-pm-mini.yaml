@@ -5,6 +5,7 @@ esphome:
 
 <<: !include ../board/espressif-esp32c3.yaml
 <<: !include ../common-esp32.yaml
+<<: !include ../time/sync.yaml
 
 # Enable ESPHome status output though red LED
 status_led:
@@ -69,8 +70,3 @@ sensor:
       name: $device_name Frequency
       accuracy_decimals: 2
     update_interval: 1s
-
-# Enable time component to reset energy at midnight
-time:
-  - platform: sntp # could be platform: homeassistant
-    timezone: America/Santiago

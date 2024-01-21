@@ -6,6 +6,7 @@ esphome:
 <<: !include ../core/wifi-failover-hotspot.yaml
 <<: !include ../core/api.yaml
 <<: !include ../core/ota.yaml
+<<: !include ../time/sync.yaml
 
 # Make sure logging is not using the serial port
 logger:
@@ -69,8 +70,3 @@ switch:
     restore_mode: RESTORE_DEFAULT_OFF
   - platform: restart
     name: $device_name $device_id Restart
-
-# Enable time component to reset energy at midnight
-time:
-  - platform: sntp # could be platform: homeassistant
-    timezone: America/Santiago

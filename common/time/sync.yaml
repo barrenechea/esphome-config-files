@@ -1,0 +1,4 @@
+time:
+  - platform: sntp
+    timezone: America/Santiago
+    id: device_time

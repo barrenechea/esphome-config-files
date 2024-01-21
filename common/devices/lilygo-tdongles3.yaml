@@ -6,16 +6,12 @@ esphome:
 
 <<: !include ../board/espressif-esp32s3.yaml
 <<: !include ../common-esp32.yaml
+<<: !include ../time/sync.yaml
 
 # SPI for Display
 spi:
   clk_pin: GPIO05
   mosi_pin: GPIO03
-
-time:
-  - platform: sntp # could be platform: homeassistant
-    timezone: America/Santiago
-    id: ha_time
 
 font:
   - file: "gfonts://Inconsolata"
@@ -38,4 +34,4 @@ display:
     eight_bit_color: true
     update_interval: 1s
     lambda: |-
-      it.printf(3, 30, id(inconsolata), Color(255, 0, 0), id(ha_time).now().strftime("%d-%m-%Y %H:%M:%S").c_str());
+      it.printf(3, 30, id(inconsolata), Color(255, 0, 0), id(device_time).now().strftime("%d-%m-%Y %H:%M:%S").c_str());
