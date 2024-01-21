@@ -1,15 +1,11 @@
-substitutions:
-  id: lilygo-t-dongle-s3
-  device_name: LilyGo T-Dongle S3
-
 esphome:
   name: $id
-  friendly_name: $device_name
+  friendly_name: $device_name $device_id
   platformio_options:
     board_build.flash_mode: dio
 
-<<: !include common/board/espressif-esp32s3.yaml
-<<: !include common/common_esp32.yaml
+<<: !include ../board/espressif-esp32s3.yaml
+<<: !include ../common_esp32.yaml
 
 # SPI for Display
 spi:
