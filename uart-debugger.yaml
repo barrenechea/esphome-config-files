@@ -9,7 +9,7 @@ esphome:
     - components/desk/desk_keypad.h
 
 <<: !include common/board/wemos-d1-mini32.yaml
-<<: !include common/common_esp32.yaml
+<<: !include common/common-esp32.yaml
 
 # Logs hex strings by default
 uart:

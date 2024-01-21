@@ -5,7 +5,7 @@ esphome:
     board_build.flash_mode: dio
 
 <<: !include ../board/espressif-esp32s3.yaml
-<<: !include ../common_esp32.yaml
+<<: !include ../common-esp32.yaml
 
 # SPI for Display
 spi:

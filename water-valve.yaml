@@ -7,7 +7,7 @@ esphome:
   friendly_name: $device_name
 
 <<: !include common/board/wemos-d1-mini32.yaml
-<<: !include common/common_esp32.yaml
+<<: !include common/common-esp32.yaml
 
 switch:
   - platform: gpio

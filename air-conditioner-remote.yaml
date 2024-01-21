@@ -6,7 +6,7 @@ esphome:
   name: air-conditioner-remote
 
 <<: !include common/board/wemos-d1-mini32.yaml
-<<: !include common/common_esp32.yaml
+<<: !include common/common-esp32.yaml
 
 remote_transmitter:
   pin: GPIO4

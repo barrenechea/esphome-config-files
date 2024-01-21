@@ -3,7 +3,7 @@ esphome:
   friendly_name: $device_name $device_id
 
 <<: !include ../board/espressif-esp8285.yaml
-<<: !include ../common_hotspot.yaml
+<<: !include ../common-hotspot.yaml
 
 # Enable ESPHome status output though green LED
 status_led:

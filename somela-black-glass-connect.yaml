@@ -12,7 +12,7 @@ esphome:
   friendly_name: $device_name
 
 <<: !include common/board/espressif-esp32c3.yaml
-<<: !include common/common_esp32.yaml
+<<: !include common/common-esp32.yaml
 
 # Enable ESPHome status output though TYJW2S PCB LED
 status_led:

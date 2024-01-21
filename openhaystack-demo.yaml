@@ -13,7 +13,7 @@ esphome:
   friendly_name: $device_name
 
 <<: !include common/board/wemos-d1-mini32.yaml
-<<: !include common/common_hotspot.yaml
+<<: !include common/common-hotspot.yaml
 
 openhaystack:
   key: !secret openhaystack_key

@@ -6,7 +6,7 @@ esphome:
   name: $id
 
 <<: !include common/board/huzzah-esp8266.yaml
-<<: !include common/common_hotspot.yaml
+<<: !include common/common-hotspot.yaml
 
 switch:
   - platform: restart

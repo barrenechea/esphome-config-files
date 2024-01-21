@@ -4,7 +4,7 @@ esphome:
   # comment: $comment
 
 <<: !include ../board/espressif-esp32c3.yaml
-<<: !include ../common_esp32.yaml
+<<: !include ../common-esp32.yaml
 
 # Enable ESPHome status output though red LED
 status_led:

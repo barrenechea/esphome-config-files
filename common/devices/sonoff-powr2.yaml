@@ -3,7 +3,7 @@ esphome:
   friendly_name: $device_name $device_id
 
 <<: !include ../board/espressif-esp8285.yaml
-<<: !include ../core/wifi_failover_hotspot.yaml
+<<: !include ../core/wifi-failover-hotspot.yaml
 <<: !include ../core/api.yaml
 <<: !include ../core/ota.yaml
 
