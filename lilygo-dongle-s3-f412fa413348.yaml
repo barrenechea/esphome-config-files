@@ -1,6 +1,0 @@
-substitutions:
-  id: lilygo-dongle-s3-f412fa413348
-  device_name: LilyGo T-Dongle S3
-  device_id: "F412FA413348"
-
-<<: !include common/devices/lilygo-t-dongle-s3.yaml
