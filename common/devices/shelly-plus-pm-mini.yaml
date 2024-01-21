@@ -3,16 +3,7 @@ esphome:
   friendly_name: "$device_name $device_id"
   # comment: $comment
 
-esp32:
-  board: esp32-c3-devkitm-1
-  framework:
-    type: esp-idf
-    version: recommended
-    sdkconfig_options:
-      COMPILER_OPTIMIZATION_SIZE: y
-    advanced:
-      ignore_efuse_mac_crc: false
-
+<<: !include ../board/espressif-esp32c3.yaml
 <<: !include ../common_esp32.yaml
 
 # Enable ESPHome status output though red LED

@@ -4,4 +4,3 @@ substitutions:
   device_id: "00139037F2"
 
 <<: !include common/devices/sonoff-powr2.yaml
-

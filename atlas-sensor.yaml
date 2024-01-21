@@ -5,9 +5,7 @@ substitutions:
 esphome:
   name: $id
 
-esp8266:
-  board: huzzah
-
+<<: !include common/board/huzzah-esp8266.yaml
 <<: !include common/common_hotspot.yaml
 
 switch:

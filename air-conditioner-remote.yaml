@@ -5,9 +5,7 @@ substitutions:
 esphome:
   name: air-conditioner-remote
 
-esp32:
-  board: wemos_d1_mini32
-
+<<: !include common/board/wemos-d1-mini32.yaml
 <<: !include common/common_esp32.yaml
 
 remote_transmitter:
