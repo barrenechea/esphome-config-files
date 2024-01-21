@@ -1,0 +1,79 @@
+esphome:
+  name: $id
+  friendly_name: $device_name $device_id
+
+esp8266:
+  board: esp8285
+  restore_from_flash: true
+
+<<: !include ../core/wifi_failover_hotspot.yaml
+<<: !include ../core/api.yaml
+<<: !include ../core/ota.yaml
+
+# Make sure logging is not using the serial port
+logger:
+  baud_rate: 0
+
+# Enable ESPHome status output though green LED
+status_led:
+  pin:
+    number: GPIO13
+    inverted: True
+
+uart:
+  rx_pin: RX
+  baud_rate: 4800
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO0
+      mode: INPUT_PULLUP
+      inverted: True
+    name: $device_name $device_id Button
+    internal: true
+    on_press:
+      - switch.toggle: relay
+
+sensor:
+  - platform: wifi_signal
+    name: $device_name $device_id WiFi Signal
+    update_interval: 60s
+  - platform: cse7766
+    update_interval: 1s
+    current:
+      name: $device_name $device_id Current
+      accuracy_decimals: 5
+    voltage:
+      name: $device_name $device_id Voltage
+    power:
+      id: sonoff_power
+      name: $device_name $device_id Power
+      unit_of_measurement: W
+      accuracy_decimals: 2
+  - platform: template
+    id: sonoff_power_kw
+    update_interval: 1s
+    name: $device_name $device_id Power (kW)
+    unit_of_measurement: kW
+    accuracy_decimals: 4
+    state_class: measurement
+    device_class: power
+    lambda: "return (id(sonoff_power).state / 1000);"
+  - platform: total_daily_energy
+    name: $device_name $device_id Total Daily Energy
+    power_id: sonoff_power_kw
+
+switch:
+  - platform: gpio
+    name: $device_name $device_id Relay
+    pin: GPIO12
+    id: relay
+    restore_mode: RESTORE_DEFAULT_OFF
+  - platform: restart
+    name: $device_name $device_id Restart
+
+# Enable time component to reset energy at midnight
+time:
+  - platform: sntp # could be platform: homeassistant
+    timezone: America/Santiago
