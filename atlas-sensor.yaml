@@ -4,6 +4,7 @@ substitutions:
 
 esphome:
   name: $id
+  friendly_name: $device_name
 
 <<: !include common/board/huzzah-esp8266.yaml
 <<: !include common/common-hotspot.yaml
