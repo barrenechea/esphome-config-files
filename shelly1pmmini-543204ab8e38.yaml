@@ -1,0 +1,6 @@
+substitutions:
+  id: shelly1pmmini-543204ab8e38
+  device_name: Shelly Plus 1PM Mini
+  device_id: "543204AB8E38"
+
+<<: !include common/devices/shelly-plus-1pm-mini.yaml
