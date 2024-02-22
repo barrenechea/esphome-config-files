@@ -38,17 +38,22 @@ sensor:
     name: $device_name $device_id WiFi Signal
     update_interval: 60s
   - platform: cse7766
-    update_interval: 1s
     current:
       name: $device_name $device_id Current
       accuracy_decimals: 5
+      filters:
+        - throttle_average: 1s
     voltage:
       name: $device_name $device_id Voltage
+      filters:
+        - throttle_average: 1s
     power:
       id: sonoff_power
       name: $device_name $device_id Power
       unit_of_measurement: W
       accuracy_decimals: 2
+      filters:
+        - throttle_average: 1s
   - platform: template
     id: sonoff_power_kw
     update_interval: 1s
