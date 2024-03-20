@@ -54,18 +54,17 @@ sensor:
       accuracy_decimals: 2
       filters:
         - throttle_average: 1s
-  - platform: template
-    id: sonoff_power_kw
-    update_interval: 1s
-    name: $device_name $device_id Power (kW)
-    unit_of_measurement: kW
-    accuracy_decimals: 4
-    state_class: measurement
-    device_class: power
-    lambda: "return (id(sonoff_power).state / 1000);"
+    apparent_power:
+      name: $device_name $device_id Apparent Power
+      filters:
+        - throttle_average: 1s
+    power_factor:
+      name: $device_name $device_id Power Factor
+      filters:
+        - throttle_average: 1s
   - platform: total_daily_energy
     name: $device_name $device_id Total Daily Energy
-    power_id: sonoff_power_kw
+    power_id: sonoff_power
 
 switch:
   - platform: gpio
