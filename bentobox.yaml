@@ -11,22 +11,12 @@ esphome:
 
 output:
   - platform: ledc
-    pin: GPIO25
-    id: gpio_25
-    frequency: 25000 Hz
-  - platform: ledc
     pin: GPIO32
-    id: gpio_32
+    id: fans_pwm
     frequency: 25000 Hz
 
 fan:
   - platform: speed
-    output: gpio_25
-    id: fan_1
-    name: "BentoBox Fan 1"
-    speed_count: 4
-  - platform: speed
-    output: gpio_32
-    id: fan_2
-    name: "BentoBox Fan 2"
-    speed_count: 4
+    output: fans_pwm
+    id: fans
+    name: "$device_name Fans"
