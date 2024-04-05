@@ -1,6 +1,6 @@
 substitutions:
   id: turingpi-pm
-  device_name: Turing Pi 2
-  device_id: "6055F99C3DB0"
+  device_name: Turing Pi 2 PM
+  device_id: ""
 
 <<: !include common/devices/shelly-plus-pm-mini.yaml
