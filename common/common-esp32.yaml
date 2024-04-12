@@ -1,4 +1,4 @@
-<<: !include core/wifi-failover-improv.yaml
+<<: !include core/wifi-no-failover.yaml
 <<: !include core/ota.yaml
 <<: !include core/logger.yaml
 <<: !include core/api.yaml

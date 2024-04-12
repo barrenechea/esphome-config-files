@@ -2,16 +2,21 @@ substitutions:
   id: bentobox
   device_name: BentoBox v2.0
 
+# https://github.com/esphome/esphome/pull/6487
+external_components:
+  - source: github://pr#6487
+    components: [logger]
+
 esphome:
   name: $id
   friendly_name: $device_name
 
-<<: !include common/board/wemos-d1-mini32.yaml
+<<: !include common/board/espressif-esp32c6.yaml
 <<: !include common/common-esp32.yaml
 
 output:
   - platform: ledc
-    pin: GPIO32
+    pin: GPIO3
     id: fans_pwm
     frequency: 25000 Hz
 
@@ -20,3 +25,12 @@ fan:
     output: fans_pwm
     id: fans
     name: "$device_name Fans"
+
+light:
+  - platform: esp32_rmt_led_strip
+    rgb_order: GRB
+    pin: GPIO15
+    num_leds: 1
+    rmt_channel: 0
+    chipset: WS2812
+    name: "$device_name Light"
