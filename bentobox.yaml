@@ -34,3 +34,4 @@ light:
     rmt_channel: 0
     chipset: WS2812
     name: "$device_name Light"
+    restore_mode: RESTORE_DEFAULT_OFF
