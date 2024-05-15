@@ -46,7 +46,7 @@ switch:
     name: $device_name $device_id Relay
     pin: GPIO5
     id: relay
-    restore_mode: ALWAYS_ON
+    restore_mode: RESTORE_DEFAULT_OFF
 
 sensor:
   - platform: ntc
