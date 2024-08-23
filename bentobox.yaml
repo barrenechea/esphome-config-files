@@ -2,11 +2,6 @@ substitutions:
   id: bentobox
   device_name: BentoBox v2.0
 
-# https://github.com/esphome/esphome/pull/6487
-external_components:
-  - source: github://pr#6487
-    components: [logger]
-
 esphome:
   name: $id
   friendly_name: $device_name
