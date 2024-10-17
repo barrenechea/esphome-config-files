@@ -14,5 +14,3 @@ esp32:
       # Enable power management
       CONFIG_PM_ENABLE: y
       CONFIG_PM_DFS_INIT_AUTO: y
-    advanced:
-      ignore_efuse_mac_crc: false
