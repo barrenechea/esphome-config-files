@@ -10,6 +10,32 @@ esphome:
 <<: !include common/board/wemos-d1-mini32.yaml
 <<: !include common/common-esp32.yaml
 
+globals:
+  - id: pump1_run_time
+    type: uint32_t
+    initial_value: "0"
+  - id: pump2_run_time
+    type: uint32_t
+    initial_value: "0"
+  - id: pump3_run_time
+    type: uint32_t
+    initial_value: "0"
+  - id: pump4_run_time
+    type: uint32_t
+    initial_value: "0"
+  - id: pump1_run_time_backup
+    type: uint32_t
+    initial_value: "0"
+  - id: pump2_run_time_backup
+    type: uint32_t
+    initial_value: "0"
+  - id: pump3_run_time_backup
+    type: uint32_t
+    initial_value: "0"
+  - id: pump4_run_time_backup
+    type: uint32_t
+    initial_value: "0"
+
 output:
   - platform: template
     id: pump1_target_speed
@@ -247,3 +273,143 @@ switch:
       - switch.template.publish:
           id: pump4_reverse
           state: OFF
+
+number:
+  - platform: template
+    name: "$device_name Pump 1 Run Time"
+    id: pump1_run_time_control
+    min_value: 0
+    max_value: 3600
+    step: 1
+    unit_of_measurement: "seconds"
+    optimistic: true
+    set_action:
+      - globals.set:
+          id: pump1_run_time
+          value: !lambda return x;
+      - globals.set:
+          id: pump1_run_time_backup
+          value: !lambda return x;
+
+  - platform: template
+    name: "$device_name Pump 2 Run Time"
+    id: pump2_run_time_control
+    min_value: 0
+    max_value: 3600
+    step: 1
+    unit_of_measurement: "seconds"
+    optimistic: true
+    set_action:
+      - globals.set:
+          id: pump2_run_time
+          value: !lambda return x;
+      - globals.set:
+          id: pump2_run_time_backup
+          value: !lambda return x;
+
+  - platform: template
+    name: "$device_name Pump 3 Run Time"
+    id: pump3_run_time_control
+    min_value: 0
+    max_value: 3600
+    step: 1
+    unit_of_measurement: "seconds"
+    optimistic: true
+    set_action:
+      - globals.set:
+          id: pump3_run_time
+          value: !lambda return x;
+      - globals.set:
+          id: pump3_run_time_backup
+          value: !lambda return x;
+
+  - platform: template
+    name: "$device_name Pump 4 Run Time"
+    id: pump4_run_time_control
+    min_value: 0
+    max_value: 3600
+    step: 1
+    unit_of_measurement: "seconds"
+    optimistic: true
+    set_action:
+      - globals.set:
+          id: pump4_run_time
+          value: !lambda return x;
+      - globals.set:
+          id: pump4_run_time_backup
+          value: !lambda return x;
+
+interval:
+  - interval: 1s
+    then:
+      - if:
+          condition:
+            and:
+              - light.is_on: pump1_speed_controller
+              - lambda: "return id(pump1_run_time) > 0;"
+          then:
+            - globals.set:
+                id: pump1_run_time
+                value: !lambda "return id(pump1_run_time) > 0 ? id(pump1_run_time) - 1 : 0;"
+            - if:
+                condition:
+                  lambda: "return id(pump1_run_time) == 0;"
+                then:
+                  - light.turn_off: pump1_speed_controller
+                  - globals.set:
+                      id: pump1_run_time
+                      value: !lambda "return id(pump1_run_time_backup);"
+
+      - if:
+          condition:
+            and:
+              - light.is_on: pump2_speed_controller
+              - lambda: "return id(pump2_run_time) > 0;"
+          then:
+            - globals.set:
+                id: pump2_run_time
+                value: !lambda "return id(pump2_run_time) > 0 ? id(pump2_run_time) - 1 : 0;"
+            - if:
+                condition:
+                  lambda: "return id(pump2_run_time) == 0;"
+                then:
+                  - light.turn_off: pump2_speed_controller
+                  - globals.set:
+                      id: pump2_run_time
+                      value: !lambda "return id(pump2_run_time_backup);"
+
+      - if:
+          condition:
+            and:
+              - light.is_on: pump3_speed_controller
+              - lambda: "return id(pump3_run_time) > 0;"
+          then:
+            - globals.set:
+                id: pump3_run_time
+                value: !lambda "return id(pump3_run_time) > 0 ? id(pump3_run_time) - 1 : 0;"
+            - if:
+                condition:
+                  lambda: "return id(pump3_run_time) == 0;"
+                then:
+                  - light.turn_off: pump3_speed_controller
+                  - globals.set:
+                      id: pump3_run_time
+                      value: !lambda "return id(pump3_run_time_backup);"
+
+      - if:
+          condition:
+            and:
+              - light.is_on: pump4_speed_controller
+              - lambda: "return id(pump4_run_time) > 0;"
+          then:
+            - globals.set:
+                id: pump4_run_time
+                value: !lambda "return id(pump4_run_time) > 0 ? id(pump4_run_time) - 1 : 0;"
+            - if:
+                condition:
+                  lambda: "return id(pump4_run_time) == 0;"
+                then:
+                  - light.turn_off: pump4_speed_controller
+                  - globals.set:
+                      id: pump4_run_time
+                      value: !lambda "return id(pump4_run_time_backup);"
