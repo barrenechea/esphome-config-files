@@ -6,7 +6,7 @@ esphome:
   name: $id
   friendly_name: $device_name
 
-<<: !include common/board/espressif-esp32c6.yaml
+<<: !include common/board/wemos-d1-mini32.yaml
 <<: !include common/common-esp32.yaml
 
 output:
