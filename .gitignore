@@ -6,5 +6,6 @@
 !components/*
 !components/*/*
 !*.yaml
+!README.md
 secrets.yaml
 __pycache__
