@@ -69,4 +69,3 @@ sensor:
     frequency:
       name: $device_name Frequency
       accuracy_decimals: 2
-    update_interval: 1s
