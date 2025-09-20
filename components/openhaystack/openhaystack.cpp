@@ -8,6 +8,7 @@
 #include <esp_bt.h>
 #include <esp_err.h>
 #include <esp_gap_ble_api.h>
+#include <algorithm>
 #include <cstring>
 #include "esphome/core/hal.h"
 
@@ -44,18 +45,8 @@ void OpenHaystack::dump_config() {
                 this->random_address_[5]
   );
   if (!this->advertising_keys_.empty()) {
-    const auto &key = this->advertising_keys_[0];
-    ESP_LOGCONFIG(TAG,
-                  "  Advertising Key (first six bytes): %02X %02X %02X %02X %02X %02X",
-                  key[0],
-                  key[1],
-                  key[2],
-                  key[3],
-                  key[4],
-                  key[5]
-    );
+    ESP_LOGCONFIG(TAG, "  Advertising keys configured: %zu", this->advertising_keys_.size());
     if (this->advertising_keys_.size() > 1) {
-      ESP_LOGCONFIG(TAG, "  Advertising keys configured: %zu", this->advertising_keys_.size());
       if (this->rotation_interval_ms_ > 0) {
         ESP_LOGCONFIG(TAG, "  Key rotation interval: %ums", this->rotation_interval_ms_);
       } else {
@@ -90,20 +81,16 @@ void OpenHaystack::setup() {
 
 float OpenHaystack::get_setup_priority() const { return setup_priority::BLUETOOTH; }
 
-void OpenHaystack::set_addr_from_key(esp_bd_addr_t addr, const uint8_t *public_key) {
+void OpenHaystack::set_addr_from_key(uint8_t *addr, const uint8_t *public_key) {
   addr[0] = public_key[0] | 0b11000000;
-  addr[1] = public_key[1];
-  addr[2] = public_key[2];
-  addr[3] = public_key[3];
-  addr[4] = public_key[4];
-  addr[5] = public_key[5];
+  std::copy_n(&public_key[1], 5, &addr[1]);
 }
 
 void OpenHaystack::set_payload_from_key(uint8_t *payload, const uint8_t *public_key) {
   /* copy last 22 bytes */
-  memcpy(&payload[7], &public_key[6], 22);
+  memcpy(&payload[OpenHaystack::ADV_PAYLOAD_KEY_OFFSET], &public_key[6], OpenHaystack::ADV_PAYLOAD_KEY_LENGTH);
   /* append two bits of public key */
-  payload[29] = public_key[0] >> 6;
+  payload[OpenHaystack::ADV_PAYLOAD_KEY_TRAILING_BITS_INDEX] = public_key[0] >> 6;
 }
 
 void OpenHaystack::ble_setup() {
@@ -237,8 +224,8 @@ void OpenHaystack::apply_current_key_() {
   if (this->advertising_keys_.empty())
     return;
   const auto &key = this->advertising_keys_[this->current_key_index_];
-  set_addr_from_key(this->random_address_, key.data());
-  set_payload_from_key(this->adv_data_, key.data());
+  set_addr_from_key(this->random_address_.data(), key.data());
+  set_payload_from_key(this->adv_data_.data(), key.data());
 }
 
 void OpenHaystack::refresh_advertisement_() {
@@ -293,13 +280,13 @@ void OpenHaystack::configure_advertisement() {
   if (global_openhaystack == nullptr)
     return;
 
-  esp_err_t err = esp_ble_gap_set_rand_addr(global_openhaystack->random_address_);
+  esp_err_t err = esp_ble_gap_set_rand_addr(global_openhaystack->random_address_.data());
   if (err != ESP_OK) {
     ESP_LOGE(TAG, "esp_ble_gap_set_rand_addr failed: %s", esp_err_to_name(err));
     return;
   }
 
-  err = esp_ble_gap_config_adv_data_raw(global_openhaystack->adv_data_, sizeof(global_openhaystack->adv_data_));
+  err = esp_ble_gap_config_adv_data_raw(global_openhaystack->adv_data_.data(), global_openhaystack->adv_data_.size());
   if (err != ESP_OK) {
     ESP_LOGE(TAG, "esp_ble_gap_config_adv_data_raw failed: %s", esp_err_to_name(err));
   }
