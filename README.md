@@ -25,7 +25,9 @@ external_components:
 
 ```yaml
 openhaystack:
-  key: !secret openhaystack_key
+  keys:
+    - !secret openhaystack_key
+  # rotation_interval: 10min  # Optional: enable when providing multiple advertisement keys
 ```
 
 3. Make sure to add your base64 advertisement key in your `secrets.yaml` file.

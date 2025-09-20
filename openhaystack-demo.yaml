@@ -16,4 +16,6 @@ esphome:
 <<: !include common/common-hotspot.yaml
 
 openhaystack:
-  key: !secret openhaystack_key
+  keys:
+    - !secret openhaystack_key
+  # rotation_interval: 10min  # Optional: enable when providing multiple advertisement keys

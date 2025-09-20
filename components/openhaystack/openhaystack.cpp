@@ -4,10 +4,9 @@
 #ifdef USE_ESP32
 
 #include <nvs_flash.h>
-#include <freertos/FreeRTOS.h>
 #include <esp_bt_main.h>
 #include <esp_bt.h>
-#include <freertos/task.h>
+#include <esp_err.h>
 #include <esp_gap_ble_api.h>
 #include <cstring>
 #include "esphome/core/hal.h"
@@ -23,7 +22,7 @@ static const char *const TAG = "openhaystack";
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 static esp_ble_adv_params_t ble_adv_params = {
-    .adv_int_min = 0x0640, // 1s
+    .adv_int_min = 0x0C80, // 2s
     .adv_int_max = 0x0C80, // 2s
     .adv_type = ADV_TYPE_NONCONN_IND,
     .own_addr_type = BLE_ADDR_TYPE_RANDOM,
@@ -44,41 +43,54 @@ void OpenHaystack::dump_config() {
                 this->random_address_[4],
                 this->random_address_[5]
   );
-  ESP_LOGCONFIG(TAG,
-                "  Advertising Key (first six digits): %02X %02X %02X %02X %02X %02X",
-                this->advertising_key_[0],
-                this->advertising_key_[1],
-                this->advertising_key_[2],
-                this->advertising_key_[3],
-                this->advertising_key_[4],
-                this->advertising_key_[5]
-  );
+  if (!this->advertising_keys_.empty()) {
+    const auto &key = this->advertising_keys_[0];
+    ESP_LOGCONFIG(TAG,
+                  "  Advertising Key (first six bytes): %02X %02X %02X %02X %02X %02X",
+                  key[0],
+                  key[1],
+                  key[2],
+                  key[3],
+                  key[4],
+                  key[5]
+    );
+    if (this->advertising_keys_.size() > 1) {
+      ESP_LOGCONFIG(TAG, "  Advertising keys configured: %zu", this->advertising_keys_.size());
+      if (this->rotation_interval_ms_ > 0) {
+        ESP_LOGCONFIG(TAG, "  Key rotation interval: %ums", this->rotation_interval_ms_);
+      } else {
+        ESP_LOGCONFIG(TAG, "  Key rotation interval: disabled");
+      }
+    }
+  } else {
+    ESP_LOGCONFIG(TAG, "  Advertising key: not configured");
+  }
 }
 
 void OpenHaystack::setup() {
   ESP_LOGCONFIG(TAG, "Setting up OpenHaystack device...");
   global_openhaystack = this;
 
-  xTaskCreatePinnedToCore(OpenHaystack::ble_core_task,
-                          "ble_task",  // name
-                          10000,       // stack size (in words)
-                          nullptr,     // input params
-                          1,           // priority
-                          nullptr,     // Handle, not needed
-                          0            // core
-  );
-}
+  if (this->advertising_keys_.empty()) {
+    ESP_LOGE(TAG, "No advertising keys configured");
+    return;
+  }
 
-float OpenHaystack::get_setup_priority() const { return setup_priority::BLUETOOTH; }
-void OpenHaystack::ble_core_task(void *params) {
+  this->apply_current_key_();
   ble_setup();
 
-  while (true) {
-    delay(1000);  // NOLINT
+  if (this->rotation_interval_ms_ > 0) {
+    if (this->advertising_keys_.size() > 1) {
+      this->set_interval("openhaystack_key_rotation", this->rotation_interval_ms_, [this]() { this->schedule_key_rotation_(); });
+    } else {
+      ESP_LOGW(TAG, "Key rotation requested but only one key provided. Rotation disabled.");
+    }
   }
 }
 
-void OpenHaystack::set_addr_from_key(esp_bd_addr_t addr, uint8_t *public_key) {
+float OpenHaystack::get_setup_priority() const { return setup_priority::BLUETOOTH; }
+
+void OpenHaystack::set_addr_from_key(esp_bd_addr_t addr, const uint8_t *public_key) {
   addr[0] = public_key[0] | 0b11000000;
   addr[1] = public_key[1];
   addr[2] = public_key[2];
@@ -87,7 +99,7 @@ void OpenHaystack::set_addr_from_key(esp_bd_addr_t addr, uint8_t *public_key) {
   addr[5] = public_key[5];
 }
 
-void OpenHaystack::set_payload_from_key(uint8_t *payload, uint8_t *public_key) {
+void OpenHaystack::set_payload_from_key(uint8_t *payload, const uint8_t *public_key) {
   /* copy last 22 bytes */
   memcpy(&payload[7], &public_key[6], 22);
   /* append two bits of public key */
@@ -95,10 +107,35 @@ void OpenHaystack::set_payload_from_key(uint8_t *payload, uint8_t *public_key) {
 }
 
 void OpenHaystack::ble_setup() {
+  if (global_openhaystack == nullptr) {
+    ESP_LOGE(TAG, "OpenHaystack instance not initialized");
+    return;
+  }
+
   // Initialize non-volatile storage for the bluetooth controller
   esp_err_t err = nvs_flash_init();
+  if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+    ESP_LOGW(TAG, "nvs_flash_init reported %s, erasing NVS partition", esp_err_to_name(err));
+    esp_err_t deinit_err = nvs_flash_deinit();
+    if (deinit_err != ESP_OK && deinit_err != ESP_ERR_NVS_NOT_INITIALIZED) {
+      ESP_LOGE(TAG, "nvs_flash_deinit failed: %s", esp_err_to_name(deinit_err));
+      return;
+    }
+    err = nvs_flash_erase();
+    if (err != ESP_OK) {
+      ESP_LOGE(TAG, "nvs_flash_erase failed: %s", esp_err_to_name(err));
+      return;
+    }
+    err = nvs_flash_init();
+  }
   if (err != ESP_OK) {
-    ESP_LOGE(TAG, "nvs_flash_init failed: %d", err);
+    ESP_LOGE(TAG, "nvs_flash_init failed: %s", esp_err_to_name(err));
+    return;
+  }
+
+  err = esp_bt_controller_mem_release(ESP_BT_MODE_CLASSIC_BT);
+  if (err != ESP_OK && err != ESP_ERR_INVALID_STATE) {
+    ESP_LOGE(TAG, "esp_bt_controller_mem_release failed: %s", esp_err_to_name(err));
     return;
   }
 
@@ -117,8 +154,15 @@ void OpenHaystack::ble_setup() {
         ESP_LOGE(TAG, "esp_bt_controller_init failed: %s", esp_err_to_name(err));
         return;
       }
-      while (esp_bt_controller_get_status() == ESP_BT_CONTROLLER_STATUS_IDLE)
-        ;
+      uint32_t wait_ms = 0;
+      while (esp_bt_controller_get_status() == ESP_BT_CONTROLLER_STATUS_IDLE) {
+        delay(10);
+        wait_ms += 10;
+        if (wait_ms >= 1000) {
+          ESP_LOGW(TAG, "BT controller still idle after waiting, continuing anyway");
+          break;
+        }
+      }
     }
     if (esp_bt_controller_get_status() == ESP_BT_CONTROLLER_STATUS_INITED) {
       err = esp_bt_controller_enable(ESP_BT_MODE_BLE);
@@ -134,34 +178,24 @@ void OpenHaystack::ble_setup() {
   }
 #endif
 
-  esp_bt_controller_mem_release(ESP_BT_MODE_CLASSIC_BT);
-
   err = esp_bluedroid_init();
   if (err != ESP_OK) {
-    ESP_LOGE(TAG, "esp_bluedroid_init failed: %d", err);
+    ESP_LOGE(TAG, "esp_bluedroid_init failed: %s", esp_err_to_name(err));
     return;
   }
   err = esp_bluedroid_enable();
   if (err != ESP_OK) {
-    ESP_LOGE(TAG, "esp_bluedroid_enable failed: %d", err);
+    ESP_LOGE(TAG, "esp_bluedroid_enable failed: %s", esp_err_to_name(err));
     return;
   }
-
-  set_addr_from_key(global_openhaystack->random_address_, global_openhaystack->advertising_key_.data());
-  set_payload_from_key(global_openhaystack->adv_data_, global_openhaystack->advertising_key_.data());
 
   err = esp_ble_gap_register_callback(OpenHaystack::gap_event_handler);
   if (err != ESP_OK) {
-    ESP_LOGE(TAG, "esp_ble_gap_register_callback failed: %d", err);
-    return;
-  }
-  err = esp_ble_gap_set_rand_addr(global_openhaystack->random_address_);
-  if (err != ESP_OK) {
-    ESP_LOGE(TAG, "esp_ble_gap_set_rand_addr failed: %s", esp_err_to_name(err));
+    ESP_LOGE(TAG, "esp_ble_gap_register_callback failed: %s", esp_err_to_name(err));
     return;
   }
 
-  esp_ble_gap_config_adv_data_raw((uint8_t *) &global_openhaystack->adv_data_, sizeof(global_openhaystack->adv_data_));
+  global_openhaystack->refresh_advertisement_();
 }
 
 void OpenHaystack::gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {
@@ -170,28 +204,104 @@ void OpenHaystack::gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_c
     case ESP_GAP_BLE_ADV_DATA_RAW_SET_COMPLETE_EVT: {
       err = esp_ble_gap_start_advertising(&ble_adv_params);
       if (err != ESP_OK) {
-        ESP_LOGE(TAG, "esp_ble_gap_start_advertising failed: %d", err);
+        ESP_LOGE(TAG, "esp_ble_gap_start_advertising failed: %s", esp_err_to_name(err));
       }
       break;
     }
     case ESP_GAP_BLE_ADV_START_COMPLETE_EVT: {
-      err = param->adv_start_cmpl.status;
-      if (err != ESP_BT_STATUS_SUCCESS) {
-        ESP_LOGE(TAG, "BLE adv start failed: %s", esp_err_to_name(err));
+      esp_bt_status_t status = param->adv_start_cmpl.status;
+      if (status != ESP_BT_STATUS_SUCCESS) {
+        ESP_LOGE(TAG, "BLE adv start failed: %s", esp_err_to_name(static_cast<esp_err_t>(status)));
+      } else if (global_openhaystack != nullptr) {
+        global_openhaystack->advertising_active_ = true;
+        ESP_LOGD(TAG, "BLE advertising started");
       }
       break;
     }
     case ESP_GAP_BLE_ADV_STOP_COMPLETE_EVT: {
-      err = param->adv_start_cmpl.status;
-      if (err != ESP_BT_STATUS_SUCCESS) {
-        ESP_LOGE(TAG, "BLE adv stop failed: %s", esp_err_to_name(err));
-      } else {
+      esp_bt_status_t status = param->adv_stop_cmpl.status;
+      if (status != ESP_BT_STATUS_SUCCESS) {
+        ESP_LOGE(TAG, "BLE adv stop failed: %s", esp_err_to_name(static_cast<esp_err_t>(status)));
+      } else if (global_openhaystack != nullptr) {
+        global_openhaystack->handle_advertising_stopped_();
         ESP_LOGD(TAG, "BLE stopped advertising successfully");
       }
       break;
     }
     default:
       break;
+  }
+}
+
+void OpenHaystack::apply_current_key_() {
+  if (this->advertising_keys_.empty())
+    return;
+  const auto &key = this->advertising_keys_[this->current_key_index_];
+  set_addr_from_key(this->random_address_, key.data());
+  set_payload_from_key(this->adv_data_, key.data());
+}
+
+void OpenHaystack::refresh_advertisement_() {
+  this->apply_current_key_();
+  configure_advertisement();
+}
+
+void OpenHaystack::handle_advertising_stopped_() {
+  this->advertising_active_ = false;
+  if (this->has_pending_key_) {
+    this->current_key_index_ = this->pending_key_index_;
+    this->has_pending_key_ = false;
+    this->refresh_advertisement_();
+  } else {
+    // Resume advertising with current key if it was stopped unexpectedly.
+    configure_advertisement();
+  }
+}
+
+void OpenHaystack::schedule_key_rotation_() {
+  if (this->advertising_keys_.size() <= 1)
+    return;
+
+  if (this->has_pending_key_) {
+    ESP_LOGD(TAG, "Key rotation already pending");
+    return;
+  }
+
+  size_t next_index = (this->current_key_index_ + 1) % this->advertising_keys_.size();
+  this->pending_key_index_ = next_index;
+  this->has_pending_key_ = true;
+
+  if (this->advertising_active_) {
+    esp_err_t err = esp_ble_gap_stop_advertising();
+    if (err == ESP_OK) {
+      ESP_LOGD(TAG, "Stopping advertising to rotate key");
+      return;
+    }
+    if (err == ESP_ERR_INVALID_STATE) {
+      this->advertising_active_ = false;
+      this->handle_advertising_stopped_();
+      return;
+    }
+    ESP_LOGE(TAG, "esp_ble_gap_stop_advertising failed: %s", esp_err_to_name(err));
+    this->has_pending_key_ = false;
+  } else {
+    this->handle_advertising_stopped_();
+  }
+}
+
+void OpenHaystack::configure_advertisement() {
+  if (global_openhaystack == nullptr)
+    return;
+
+  esp_err_t err = esp_ble_gap_set_rand_addr(global_openhaystack->random_address_);
+  if (err != ESP_OK) {
+    ESP_LOGE(TAG, "esp_ble_gap_set_rand_addr failed: %s", esp_err_to_name(err));
+    return;
+  }
+
+  err = esp_ble_gap_config_adv_data_raw(global_openhaystack->adv_data_, sizeof(global_openhaystack->adv_data_));
+  if (err != ESP_OK) {
+    ESP_LOGE(TAG, "esp_ble_gap_config_adv_data_raw failed: %s", esp_err_to_name(err));
   }
 }
 
