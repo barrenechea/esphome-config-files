@@ -8,6 +8,8 @@
 
 #include <esp_gap_ble_api.h>
 
+#include "crypto_context.h"
+
 namespace esphome {
 namespace openhaystack {
 
@@ -30,8 +32,6 @@ class OpenHaystack : public Component {
   static constexpr const char *const NVS_KEY_CURRENT_SYM = "curr_sym";
   static constexpr const char *const NVS_KEY_COUNTER = "counter";
   using AdvertisingKey = std::array<uint8_t, ADVERTISING_KEY_SIZE>;
-
-  OpenHaystack() = default;
 
   void setup() override;
   void dump_config() override;
@@ -95,6 +95,7 @@ class OpenHaystack : public Component {
   uint32_t derived_key_counter_ = 0;
   uint16_t adv_interval_min_ = 0x0C80;
   uint16_t adv_interval_max_ = 0x0C80;
+  CryptoContext crypto_context_;
 };
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)

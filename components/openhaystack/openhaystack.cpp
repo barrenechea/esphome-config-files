@@ -13,12 +13,8 @@
 #include <esp_idf_version.h>
 #include <algorithm>
 #include <array>
+#include <inttypes.h>
 #include <cstring>
-#include <mbedtls/bignum.h>
-#include <mbedtls/ctr_drbg.h>
-#include <mbedtls/ecp.h>
-#include <mbedtls/entropy.h>
-#include <mbedtls/sha256.h>
 #include "esphome/core/hal.h"
 
 #ifdef USE_ARDUINO
@@ -29,11 +25,6 @@ namespace esphome {
 namespace openhaystack {
 
 static const char *const TAG = "openhaystack";
-
-static constexpr const char *const NVS_NAMESPACE = "openhaystack";
-static constexpr const char *const NVS_KEY_COUNTER = "derived_counter";
-static constexpr const char *const NVS_KEY_MASTER_DIGEST = "master_digest";
-static constexpr const char *const NVS_KEY_CURRENT_SYM = "current_symmetric";
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 static esp_ble_adv_params_t ble_adv_params = {
@@ -61,13 +52,13 @@ void OpenHaystack::dump_config() {
   if (this->has_master_keys_) {
     ESP_LOGCONFIG(TAG, "  Master key derivation: enabled");
     ESP_LOGCONFIG(TAG, "  Derived key counter: %u", static_cast<unsigned>(this->derived_key_counter_));
-    ESP_LOGCONFIG(TAG, "  Key rotation interval: %ums (spec enforced)", ROTATION_INTERVAL_MS);
+    ESP_LOGCONFIG(TAG, "  Key rotation interval: %" PRIu32 "ms", static_cast<uint32_t>(ROTATION_INTERVAL_MS));
   }
   if (!this->has_master_keys_) {
     ESP_LOGCONFIG(TAG, "  Master keys: not configured");
   }
   uint32_t interval_ms = static_cast<uint32_t>(this->adv_interval_min_ * 625U / 1000U);
-  ESP_LOGCONFIG(TAG, "  Advertising interval: %u ms", interval_ms);
+  ESP_LOGCONFIG(TAG, "  Advertising interval: %" PRIu32 " ms", interval_ms);
   ESP_LOGCONFIG(TAG, "  Controller memory trim: enabled");
 }
 
@@ -145,15 +136,8 @@ void OpenHaystack::ble_setup() {
     // start bt controller
     if (esp_bt_controller_get_status() == ESP_BT_CONTROLLER_STATUS_IDLE) {
       esp_bt_controller_config_t cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
-#if ESP_IDF_VERSION_MAJOR >= 5
       cfg.ble_max_act = std::min<uint8_t>(cfg.ble_max_act, static_cast<uint8_t>(1));
       cfg.ble_st_acl_tx_buf_nb = std::min<uint8_t>(cfg.ble_st_acl_tx_buf_nb, static_cast<uint8_t>(1));
-#else
-      cfg.ble_max_conn = std::min<uint8_t>(cfg.ble_max_conn, static_cast<uint8_t>(1));
-      cfg.bt_max_acl_conn = 0;
-      cfg.bt_max_sync_conn = 0;
-      cfg.send_adv_reserved_size = 0;
-#endif
       cfg.normal_adv_size = std::min<uint16_t>(cfg.normal_adv_size, static_cast<uint16_t>(10));
       cfg.mesh_adv_size = std::min<uint16_t>(cfg.mesh_adv_size, static_cast<uint16_t>(10));
       cfg.dup_list_refresh_period = 0;
@@ -222,7 +206,6 @@ void OpenHaystack::gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_c
         ESP_LOGE(TAG, "BLE adv start failed: %s", esp_err_to_name(static_cast<esp_err_t>(status)));
       } else if (global_openhaystack != nullptr) {
         global_openhaystack->advertising_active_ = true;
-        ESP_LOGD(TAG, "BLE advertising started");
       }
       break;
     }
@@ -232,7 +215,6 @@ void OpenHaystack::gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_c
         ESP_LOGE(TAG, "BLE adv stop failed: %s", esp_err_to_name(static_cast<esp_err_t>(status)));
       } else if (global_openhaystack != nullptr) {
         global_openhaystack->handle_advertising_stopped_();
-        ESP_LOGD(TAG, "BLE stopped advertising successfully");
       }
       break;
     }
@@ -263,6 +245,8 @@ void OpenHaystack::refresh_advertisement_() {
 void OpenHaystack::handle_advertising_stopped_() {
   this->advertising_active_ = false;
   if (this->awaiting_refresh_after_stop_) {
+    ESP_LOGD(TAG, "Derived advertising key applied (counter=%u); restarting advertising",
+             static_cast<unsigned>(this->derived_key_counter_));
     this->awaiting_refresh_after_stop_ = false;
     this->refresh_advertisement_();
   } else {
@@ -283,7 +267,6 @@ void OpenHaystack::schedule_key_rotation_() {
     this->awaiting_refresh_after_stop_ = true;
     esp_err_t err = esp_ble_gap_stop_advertising();
     if (err == ESP_OK) {
-      ESP_LOGD(TAG, "Stopping advertising to apply derived key");
       return;
     }
     if (err == ESP_ERR_INVALID_STATE) {
@@ -323,7 +306,17 @@ bool OpenHaystack::initialize_master_keys_() {
   bool restored_state = this->load_persisted_state_();
 
   if (!this->derive_public_key_from_private_(this->current_private_key_, advertising_key)) {
-    return false;
+    if (restored_state) {
+      ESP_LOGW(TAG, "Persisted private key invalid, clearing stored state");
+      this->clear_persisted_state_();
+      this->current_private_key_ = this->master_private_key_;
+      this->current_symmetric_key_ = this->master_symmetric_key_;
+      this->derived_key_counter_ = 0;
+      restored_state = false;
+    }
+    if (!this->derive_public_key_from_private_(this->current_private_key_, advertising_key)) {
+      return false;
+    }
   }
 
   this->current_advertising_key_ = advertising_key;
@@ -387,207 +380,19 @@ bool OpenHaystack::derive_next_master_key_() {
 
 bool OpenHaystack::derive_public_key_from_private_(const std::array<uint8_t, MASTER_PRIVATE_KEY_SIZE> &private_key,
                                                    AdvertisingKey &advertising_key_out) {
-  mbedtls_entropy_context entropy;
-  mbedtls_ctr_drbg_context ctr_drbg;
-  mbedtls_ecp_group group;
-  mbedtls_ecp_point point;
-  mbedtls_mpi private_mpi;
-
-  mbedtls_entropy_init(&entropy);
-  mbedtls_ctr_drbg_init(&ctr_drbg);
-  mbedtls_ecp_group_init(&group);
-  mbedtls_ecp_point_init(&point);
-  mbedtls_mpi_init(&private_mpi);
-
-  bool ok = true;
-  int ret;
-  const char *pers = "openhaystack_ec";
-
-  do {
-    ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy,
-                                reinterpret_cast<const unsigned char *>(pers), std::strlen(pers));
-    if (ret != 0) {
-      ESP_LOGE(TAG, "mbedtls_ctr_drbg_seed failed: %d", ret);
-      ok = false;
-      break;
-    }
-
-    ret = mbedtls_ecp_group_load(&group, MBEDTLS_ECP_DP_SECP224R1);
-    if (ret != 0) {
-      ESP_LOGE(TAG, "mbedtls_ecp_group_load failed: %d", ret);
-      ok = false;
-      break;
-    }
-
-    ret = mbedtls_mpi_read_binary(&private_mpi, private_key.data(), private_key.size());
-    if (ret != 0) {
-      ESP_LOGE(TAG, "mbedtls_mpi_read_binary failed: %d", ret);
-      ok = false;
-      break;
-    }
-
-    ret = mbedtls_ecp_mul(&group, &point, &private_mpi, &group.G, mbedtls_ctr_drbg_random, &ctr_drbg);
-    if (ret != 0) {
-      ESP_LOGE(TAG, "mbedtls_ecp_mul failed: %d", ret);
-      ok = false;
-      break;
-    }
-
-    std::array<uint8_t, 1 + MASTER_PRIVATE_KEY_SIZE> compressed{};
-    size_t compressed_len = 0;
-    ret = mbedtls_ecp_point_write_binary(&group, &point, MBEDTLS_ECP_PF_COMPRESSED, &compressed_len, compressed.data(), compressed.size());
-    if (ret != 0 || compressed_len != compressed.size()) {
-      ESP_LOGE(TAG, "mbedtls_ecp_point_write_binary (compressed) failed: %d", ret);
-      ok = false;
-      break;
-    }
-
-    std::copy_n(compressed.begin() + 1, MASTER_PRIVATE_KEY_SIZE, advertising_key_out.begin());
-
-    std::fill(compressed.begin(), compressed.end(), 0);
-  } while (false);
-
-  mbedtls_mpi_free(&private_mpi);
-  mbedtls_ecp_point_free(&point);
-  mbedtls_ecp_group_free(&group);
-  mbedtls_ctr_drbg_free(&ctr_drbg);
-  mbedtls_entropy_free(&entropy);
-
-  return ok;
+  advertising_key_out.fill(0);
+  return this->crypto_context_.derive_public_key(private_key.data(), private_key.size(),
+                                                 advertising_key_out.data(), advertising_key_out.size());
 }
 
 bool OpenHaystack::calculate_derived_private_key_(const std::array<uint8_t, DERIVED_SHARED_DATA_SIZE> &shared_data,
                                                   std::array<uint8_t, MASTER_PRIVATE_KEY_SIZE> &out_private_key) {
-  mbedtls_ecp_group group;
-  mbedtls_ecp_group_init(&group);
-  int ret = mbedtls_ecp_group_load(&group, MBEDTLS_ECP_DP_SECP224R1);
-  if (ret != 0) {
-    ESP_LOGE(TAG, "mbedtls_ecp_group_load failed: %d", ret);
-    mbedtls_ecp_group_free(&group);
-    return false;
-  }
-
-  mbedtls_mpi order;
-  mbedtls_mpi order_minus_one;
-  mbedtls_mpi ui;
-  mbedtls_mpi vi;
-  mbedtls_mpi d0;
-  mbedtls_mpi di;
-  mbedtls_mpi tmp;
-
-  mbedtls_mpi_init(&order);
-  mbedtls_mpi_init(&order_minus_one);
-  mbedtls_mpi_init(&ui);
-  mbedtls_mpi_init(&vi);
-  mbedtls_mpi_init(&d0);
-  mbedtls_mpi_init(&di);
-  mbedtls_mpi_init(&tmp);
-
-  bool ok = true;
-
-  do {
-    ret = mbedtls_mpi_copy(&order, &group.N);
-    if (ret != 0) {
-      ESP_LOGE(TAG, "mbedtls_mpi_copy(order) failed: %d", ret);
-      ok = false;
-      break;
-    }
-    ret = mbedtls_mpi_copy(&order_minus_one, &group.N);
-    if (ret != 0) {
-      ESP_LOGE(TAG, "mbedtls_mpi_copy(order_minus_one) failed: %d", ret);
-      ok = false;
-      break;
-    }
-    ret = mbedtls_mpi_sub_int(&order_minus_one, &order_minus_one, 1);
-    if (ret != 0) {
-      ESP_LOGE(TAG, "mbedtls_mpi_sub_int failed: %d", ret);
-      ok = false;
-      break;
-    }
-
-    ret = mbedtls_mpi_read_binary(&ui, shared_data.data(), ANTI_TRACKING_COMPONENT_SIZE);
-    if (ret != 0) {
-      ESP_LOGE(TAG, "mbedtls_mpi_read_binary(u_i) failed: %d", ret);
-      ok = false;
-      break;
-    }
-    ret = mbedtls_mpi_mod_mpi(&ui, &ui, &order_minus_one);
-    if (ret != 0) {
-      ESP_LOGE(TAG, "mbedtls_mpi_mod_mpi(u_i) failed: %d", ret);
-      ok = false;
-      break;
-    }
-    ret = mbedtls_mpi_add_int(&ui, &ui, 1);
-    if (ret != 0) {
-      ESP_LOGE(TAG, "mbedtls_mpi_add_int(u_i) failed: %d", ret);
-      ok = false;
-      break;
-    }
-
-    ret = mbedtls_mpi_read_binary(&vi, shared_data.data() + ANTI_TRACKING_COMPONENT_SIZE, ANTI_TRACKING_COMPONENT_SIZE);
-    if (ret != 0) {
-      ESP_LOGE(TAG, "mbedtls_mpi_read_binary(v_i) failed: %d", ret);
-      ok = false;
-      break;
-    }
-    ret = mbedtls_mpi_mod_mpi(&vi, &vi, &order_minus_one);
-    if (ret != 0) {
-      ESP_LOGE(TAG, "mbedtls_mpi_mod_mpi(v_i) failed: %d", ret);
-      ok = false;
-      break;
-    }
-    ret = mbedtls_mpi_add_int(&vi, &vi, 1);
-    if (ret != 0) {
-      ESP_LOGE(TAG, "mbedtls_mpi_add_int(v_i) failed: %d", ret);
-      ok = false;
-      break;
-    }
-
-    ret = mbedtls_mpi_read_binary(&d0, this->master_private_key_.data(), this->master_private_key_.size());
-    if (ret != 0) {
-      ESP_LOGE(TAG, "mbedtls_mpi_read_binary(d0) failed: %d", ret);
-      ok = false;
-      break;
-    }
-
-    ret = mbedtls_mpi_mul_mpi(&tmp, &d0, &ui);
-    if (ret != 0) {
-      ESP_LOGE(TAG, "mbedtls_mpi_mul_mpi failed: %d", ret);
-      ok = false;
-      break;
-    }
-    ret = mbedtls_mpi_add_mpi(&di, &tmp, &vi);
-    if (ret != 0) {
-      ESP_LOGE(TAG, "mbedtls_mpi_add_mpi failed: %d", ret);
-      ok = false;
-      break;
-    }
-
-    ret = mbedtls_mpi_mod_mpi(&di, &di, &order);
-    if (ret != 0) {
-      ESP_LOGE(TAG, "mbedtls_mpi_mod_mpi(d_i) failed: %d", ret);
-      ok = false;
-      break;
-    }
-
-    ret = mbedtls_mpi_write_binary(&di, out_private_key.data(), out_private_key.size());
-    if (ret != 0) {
-      ESP_LOGE(TAG, "mbedtls_mpi_write_binary(d_i) failed: %d", ret);
-      ok = false;
-      break;
-    }
-  } while (false);
-
-  mbedtls_mpi_free(&tmp);
-  mbedtls_mpi_free(&di);
-  mbedtls_mpi_free(&d0);
-  mbedtls_mpi_free(&vi);
-  mbedtls_mpi_free(&ui);
-  mbedtls_mpi_free(&order_minus_one);
-  mbedtls_mpi_free(&order);
-  mbedtls_ecp_group_free(&group);
-
-  return ok;
+  return this->crypto_context_.calculate_derived_private_key(shared_data.data(),
+                                                             shared_data.size(),
+                                                             this->master_private_key_.data(),
+                                                             this->master_private_key_.size(),
+                                                             out_private_key.data(),
+                                                             out_private_key.size());
 }
 
 bool OpenHaystack::ensure_nvs_initialized_() {
@@ -621,40 +426,12 @@ bool OpenHaystack::ensure_nvs_initialized_() {
 }
 
 bool OpenHaystack::compute_master_key_digest_(std::array<uint8_t, MASTER_KEY_DIGEST_SIZE> &digest_out) const {
-  unsigned char full_digest[32] = {0};
-  mbedtls_sha256_context sha;
-  mbedtls_sha256_init(&sha);
-
-  bool ok = true;
-  do {
-    if (mbedtls_sha256_starts(&sha, 0) != 0) {
-      ok = false;
-      break;
-    }
-    if (mbedtls_sha256_update(&sha, this->master_private_key_.data(), this->master_private_key_.size()) != 0) {
-      ok = false;
-      break;
-    }
-    if (mbedtls_sha256_update(&sha, this->master_symmetric_key_.data(), this->master_symmetric_key_.size()) != 0) {
-      ok = false;
-      break;
-    }
-    if (mbedtls_sha256_finish(&sha, full_digest) != 0) {
-      ok = false;
-      break;
-    }
-  } while (false);
-
-  mbedtls_sha256_free(&sha);
-
-  if (!ok) {
-    std::fill(std::begin(full_digest), std::end(full_digest), 0);
-    return false;
-  }
-
-  std::copy_n(full_digest, digest_out.size(), digest_out.begin());
-  std::fill(std::begin(full_digest), std::end(full_digest), 0);
-  return true;
+  return CryptoContext::compute_master_key_digest(this->master_private_key_.data(),
+                                                  this->master_private_key_.size(),
+                                                  this->master_symmetric_key_.data(),
+                                                  this->master_symmetric_key_.size(),
+                                                  digest_out.data(),
+                                                  digest_out.size());
 }
 
 bool OpenHaystack::save_persisted_state_() {
@@ -665,11 +442,11 @@ bool OpenHaystack::save_persisted_state_() {
   }
 
   nvs_handle_t handle = 0;
-  esp_err_t err = nvs_open(NVS_NAMESPACE, NVS_READWRITE, &handle);
+  esp_err_t err = nvs_open(OpenHaystack::NVS_NAMESPACE, NVS_READWRITE, &handle);
   if (err == ESP_ERR_NVS_NOT_INITIALIZED) {
     if (!this->ensure_nvs_initialized_())
       return false;
-    err = nvs_open(NVS_NAMESPACE, NVS_READWRITE, &handle);
+    err = nvs_open(OpenHaystack::NVS_NAMESPACE, NVS_READWRITE, &handle);
   }
   if (err != ESP_OK) {
     ESP_LOGE(TAG, "nvs_open failed: %s", esp_err_to_name(err));
@@ -680,25 +457,25 @@ bool OpenHaystack::save_persisted_state_() {
   bool ok = true;
 
   do {
-    err = nvs_set_blob(handle, NVS_KEY_MASTER_DIGEST, master_digest.data(), master_digest.size());
+    err = nvs_set_blob(handle, OpenHaystack::NVS_KEY_MASTER_DIGEST, master_digest.data(), master_digest.size());
     if (err != ESP_OK) {
       ESP_LOGE(TAG, "nvs_set_blob(master_digest) failed: %s", esp_err_to_name(err));
       ok = false;
       break;
     }
-    err = nvs_set_blob(handle, NVS_KEY_CURRENT_PRIV, this->current_private_key_.data(), this->current_private_key_.size());
+    err = nvs_set_blob(handle, OpenHaystack::NVS_KEY_CURRENT_PRIV, this->current_private_key_.data(), this->current_private_key_.size());
     if (err != ESP_OK) {
       ESP_LOGE(TAG, "nvs_set_blob(current_private) failed: %s", esp_err_to_name(err));
       ok = false;
       break;
     }
-    err = nvs_set_blob(handle, NVS_KEY_CURRENT_SYM, this->current_symmetric_key_.data(), this->current_symmetric_key_.size());
+    err = nvs_set_blob(handle, OpenHaystack::NVS_KEY_CURRENT_SYM, this->current_symmetric_key_.data(), this->current_symmetric_key_.size());
     if (err != ESP_OK) {
       ESP_LOGE(TAG, "nvs_set_blob(current_symmetric) failed: %s", esp_err_to_name(err));
       ok = false;
       break;
     }
-    err = nvs_set_u32(handle, NVS_KEY_COUNTER, this->derived_key_counter_);
+    err = nvs_set_u32(handle, OpenHaystack::NVS_KEY_COUNTER, this->derived_key_counter_);
     if (err != ESP_OK) {
       ESP_LOGE(TAG, "nvs_set_u32(counter) failed: %s", esp_err_to_name(err));
       ok = false;
@@ -719,7 +496,7 @@ bool OpenHaystack::save_persisted_state_() {
 
 void OpenHaystack::clear_persisted_state_() {
   nvs_handle_t handle = 0;
-  esp_err_t err = nvs_open(NVS_NAMESPACE, NVS_READWRITE, &handle);
+  esp_err_t err = nvs_open(OpenHaystack::NVS_NAMESPACE, NVS_READWRITE, &handle);
   if (err != ESP_OK) {
     return;
   }
@@ -737,7 +514,7 @@ bool OpenHaystack::load_persisted_state_() {
     return false;
 
   nvs_handle_t handle = 0;
-  esp_err_t err = nvs_open(NVS_NAMESPACE, NVS_READONLY, &handle);
+  esp_err_t err = nvs_open(OpenHaystack::NVS_NAMESPACE, NVS_READONLY, &handle);
   if (err != ESP_OK) {
     return false;
   }
@@ -747,7 +524,7 @@ bool OpenHaystack::load_persisted_state_() {
 
   std::array<uint8_t, MASTER_KEY_DIGEST_SIZE> stored_digest{};
   size_t digest_len = stored_digest.size();
-  err = nvs_get_blob(handle, NVS_KEY_MASTER_DIGEST, stored_digest.data(), &digest_len);
+  err = nvs_get_blob(handle, OpenHaystack::NVS_KEY_MASTER_DIGEST, stored_digest.data(), &digest_len);
   if (err != ESP_OK || digest_len != stored_digest.size()) {
     ok = false;
   }
@@ -764,7 +541,7 @@ bool OpenHaystack::load_persisted_state_() {
 
   if (ok) {
     size_t priv_len = this->current_private_key_.size();
-    err = nvs_get_blob(handle, NVS_KEY_CURRENT_PRIV, this->current_private_key_.data(), &priv_len);
+    err = nvs_get_blob(handle, OpenHaystack::NVS_KEY_CURRENT_PRIV, this->current_private_key_.data(), &priv_len);
     if (err != ESP_OK || priv_len != this->current_private_key_.size()) {
       ok = false;
     }
@@ -772,7 +549,7 @@ bool OpenHaystack::load_persisted_state_() {
 
   if (ok) {
     size_t sym_len = this->current_symmetric_key_.size();
-    err = nvs_get_blob(handle, NVS_KEY_CURRENT_SYM, this->current_symmetric_key_.data(), &sym_len);
+    err = nvs_get_blob(handle, OpenHaystack::NVS_KEY_CURRENT_SYM, this->current_symmetric_key_.data(), &sym_len);
     if (err != ESP_OK || sym_len != this->current_symmetric_key_.size()) {
       ok = false;
     }
@@ -780,7 +557,7 @@ bool OpenHaystack::load_persisted_state_() {
 
   if (ok) {
     uint32_t counter = 0;
-    err = nvs_get_u32(handle, NVS_KEY_COUNTER, &counter);
+    err = nvs_get_u32(handle, OpenHaystack::NVS_KEY_COUNTER, &counter);
     if (err != ESP_OK) {
       ok = false;
     } else {
@@ -811,44 +588,7 @@ bool OpenHaystack::kdf_(const uint8_t *input,
                         const char *label,
                         uint8_t *output,
                         size_t output_length) {
-  if (input == nullptr || output == nullptr || label == nullptr)
-    return false;
-
-  size_t label_length = std::strlen(label);
-  if (label_length == 0)
-    return false;
-
-  uint32_t counter = 1;
-  size_t produced = 0;
-
-  while (produced < output_length) {
-    unsigned char digest[32] = {0};
-    mbedtls_sha256_context sha;
-    mbedtls_sha256_init(&sha);
-
-    mbedtls_sha256_starts(&sha, 0);
-    mbedtls_sha256_update(&sha, input, input_length);
-
-    unsigned char counter_bytes[4] = {
-        static_cast<uint8_t>((counter >> 24) & 0xFF),
-        static_cast<uint8_t>((counter >> 16) & 0xFF),
-        static_cast<uint8_t>((counter >> 8) & 0xFF),
-        static_cast<uint8_t>(counter & 0xFF),
-    };
-    mbedtls_sha256_update(&sha, counter_bytes, sizeof(counter_bytes));
-    mbedtls_sha256_update(&sha, reinterpret_cast<const unsigned char *>(label), label_length);
-
-    mbedtls_sha256_finish(&sha, digest);
-    mbedtls_sha256_free(&sha);
-
-    size_t copy_len = std::min(static_cast<size_t>(sizeof(digest)), output_length - produced);
-    std::memcpy(output + produced, digest, copy_len);
-    produced += copy_len;
-    counter++;
-    std::fill(std::begin(digest), std::end(digest), 0);
-  }
-
-  return true;
+  return CryptoContext::kdf(input, input_length, label, output, output_length);
 }
 
 void OpenHaystack::configure_advertisement() {

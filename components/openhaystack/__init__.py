@@ -67,3 +67,5 @@ async def to_code(config):
         add_idf_sdkconfig_option("CONFIG_MBEDTLS_ECP_DP_SECP224R1_ENABLED", True)
         add_idf_sdkconfig_option("CONFIG_MBEDTLS_ENTROPY_C", True)
         add_idf_sdkconfig_option("CONFIG_MBEDTLS_CTR_DRBG_C", True)
+        add_idf_sdkconfig_option("CONFIG_MBEDTLS_ECP_NIST_OPTIM", True)
+        add_idf_sdkconfig_option("CONFIG_MBEDTLS_ECP_FIXED_POINT_OPTIM", True)
