@@ -31,6 +31,8 @@ openhaystack:
 
 3. Make sure to add your base64 advertisement key in your `secrets.yaml` file.
 
+Hardware acceleration: the component automatically requests the ESP-IDF build to enable the hardware MPI/ECC engines and NIST optimisations so scalar multiplication remains efficient.
+
 For a complete example, check [openhaystack-demo.yaml](openhaystack-demo.yaml) or [openhaystack-demo-s3.yaml](openhaystack-demo-s3.yaml).
 
 ### Component Files
