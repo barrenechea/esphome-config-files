@@ -61,14 +61,7 @@ void OpenHaystack::dump_config() {
   if (this->has_master_keys_) {
     ESP_LOGCONFIG(TAG, "  Master key derivation: enabled");
     ESP_LOGCONFIG(TAG, "  Derived key counter: %u", static_cast<unsigned>(this->derived_key_counter_));
-    ESP_LOGCONFIG(TAG,
-                 "  Master public key provided: %s",
-                 this->master_public_key_set_ ? "yes" : "no");
-    if (this->rotation_interval_ms_ > 0) {
-      ESP_LOGCONFIG(TAG, "  Key rotation interval: %ums", this->rotation_interval_ms_);
-    } else {
-      ESP_LOGCONFIG(TAG, "  Key rotation interval: disabled");
-    }
+    ESP_LOGCONFIG(TAG, "  Key rotation interval: %ums (spec enforced)", ROTATION_INTERVAL_MS);
   }
   if (!this->has_master_keys_) {
     ESP_LOGCONFIG(TAG, "  Master keys: not configured");
@@ -104,9 +97,7 @@ void OpenHaystack::setup() {
 
   ble_setup();
 
-  if (this->rotation_interval_ms_ > 0) {
-    this->set_interval("openhaystack_key_rotation", this->rotation_interval_ms_, [this]() { this->schedule_key_rotation_(); });
-  }
+  this->set_interval("openhaystack_key_rotation", ROTATION_INTERVAL_MS, [this]() { this->schedule_key_rotation_(); });
 }
 
 float OpenHaystack::get_setup_priority() const { return setup_priority::BLUETOOTH; }
@@ -320,11 +311,6 @@ void OpenHaystack::set_master_keys(const std::array<uint8_t, MASTER_PRIVATE_KEY_
   this->current_advertising_key_.fill(0);
 }
 
-void OpenHaystack::set_master_public_key(const std::array<uint8_t, MASTER_PUBLIC_KEY_UNCOMPRESSED_SIZE> &master_public_key) {
-  this->master_public_key_ = master_public_key;
-  this->master_public_key_set_ = true;
-}
-
 bool OpenHaystack::initialize_master_keys_() {
   if (!this->has_master_keys_)
     return false;
@@ -336,16 +322,8 @@ bool OpenHaystack::initialize_master_keys_() {
   AdvertisingKey advertising_key{};
   bool restored_state = this->load_persisted_state_();
 
-  std::array<uint8_t, MASTER_PUBLIC_KEY_UNCOMPRESSED_SIZE> derived_uncompressed{};
-  std::array<uint8_t, MASTER_PUBLIC_KEY_UNCOMPRESSED_SIZE> *uncompressed_ptr =
-      (this->master_public_key_set_ && !restored_state) ? &derived_uncompressed : nullptr;
-
-  if (!this->derive_public_key_from_private_(this->current_private_key_, advertising_key, uncompressed_ptr)) {
+  if (!this->derive_public_key_from_private_(this->current_private_key_, advertising_key)) {
     return false;
-  }
-
-  if (uncompressed_ptr != nullptr && derived_uncompressed != this->master_public_key_) {
-    ESP_LOGW(TAG, "Provided master public key does not match derived key");
   }
 
   this->current_advertising_key_ = advertising_key;
@@ -358,8 +336,6 @@ bool OpenHaystack::initialize_master_keys_() {
   if (!this->save_persisted_state_()) {
     ESP_LOGW(TAG, "Unable to persist OpenHaystack state after initialization");
   }
-
-  derived_uncompressed.fill(0);
 
   return true;
 }
@@ -410,8 +386,7 @@ bool OpenHaystack::derive_next_master_key_() {
 }
 
 bool OpenHaystack::derive_public_key_from_private_(const std::array<uint8_t, MASTER_PRIVATE_KEY_SIZE> &private_key,
-                                                   AdvertisingKey &advertising_key_out,
-                                                   std::array<uint8_t, MASTER_PUBLIC_KEY_UNCOMPRESSED_SIZE> *uncompressed_out) {
+                                                   AdvertisingKey &advertising_key_out) {
   mbedtls_entropy_context entropy;
   mbedtls_ctr_drbg_context ctr_drbg;
   mbedtls_ecp_group group;
@@ -468,19 +443,6 @@ bool OpenHaystack::derive_public_key_from_private_(const std::array<uint8_t, MAS
     }
 
     std::copy_n(compressed.begin() + 1, MASTER_PRIVATE_KEY_SIZE, advertising_key_out.begin());
-
-    if (uncompressed_out != nullptr) {
-      std::array<uint8_t, MASTER_PUBLIC_KEY_UNCOMPRESSED_SIZE> uncompressed{};
-      size_t uncompressed_len = 0;
-      ret = mbedtls_ecp_point_write_binary(&group, &point, MBEDTLS_ECP_PF_UNCOMPRESSED, &uncompressed_len, uncompressed.data(), uncompressed.size());
-      if (ret != 0 || uncompressed_len != uncompressed.size()) {
-        ESP_LOGE(TAG, "mbedtls_ecp_point_write_binary (uncompressed) failed: %d", ret);
-        ok = false;
-        break;
-      }
-      std::copy_n(uncompressed.begin(), uncompressed.size(), uncompressed_out->begin());
-      std::fill(uncompressed.begin(), uncompressed.end(), 0);
-    }
 
     std::fill(compressed.begin(), compressed.end(), 0);
   } while (false);
