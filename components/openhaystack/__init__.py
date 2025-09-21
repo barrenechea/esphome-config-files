@@ -3,7 +3,7 @@ import base64
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.const import CONF_ID
-from esphome.core import CORE, TimePeriod
+from esphome.core import CORE
 from esphome.components.esp32 import add_idf_sdkconfig_option
 
 DEPENDENCIES = ["esp32"]
@@ -12,10 +12,8 @@ CONFLICTS_WITH = ["esp32_ble_tracker", "esp32_ble_beacon"]
 openhaystack_ns = cg.esphome_ns.namespace("openhaystack")
 OpenHaystack = openhaystack_ns.class_("OpenHaystack", cg.Component)
 
-CONF_ROTATION_INTERVAL = "rotation_interval"
 CONF_MASTER_PRIVATE_KEY = "master_private_key"
 CONF_MASTER_SYMMETRIC_KEY = "master_symmetric_key"
-CONF_MASTER_PUBLIC_KEY = "master_public_key"
 
 
 def _decode_fixed_length_base64(value: str, *, expected_length: int, label: str) -> list[int]:
@@ -37,11 +35,6 @@ CONFIG_SCHEMA = cv.Schema(
         cv.GenerateID(): cv.declare_id(OpenHaystack),
         cv.Required(CONF_MASTER_PRIVATE_KEY): cv.string,
         cv.Required(CONF_MASTER_SYMMETRIC_KEY): cv.string,
-        cv.Optional(CONF_MASTER_PUBLIC_KEY): cv.string,
-        cv.Optional(CONF_ROTATION_INTERVAL): cv.All(
-            cv.positive_time_period_milliseconds,
-            cv.Range(min=TimePeriod(milliseconds=100)),
-        ),
     }
 ).extend(cv.COMPONENT_SCHEMA)
 
@@ -63,22 +56,6 @@ async def to_code(config):
         "std::array<uint8_t, 32>{" + ", ".join(f"0x{byte:02X}" for byte in symmetric_bytes) + "}"
     )
     cg.add(var.set_master_keys(private_expr, symmetric_expr))
-
-    if (public_value := config.get(CONF_MASTER_PUBLIC_KEY)) is not None:
-        public_bytes = _decode_fixed_length_base64(
-            public_value,
-            expected_length=57,
-            label="Master public key (uncompressed)",
-        )
-        public_expr = cg.RawExpression(
-            "std::array<uint8_t, 57>{"
-            + ", ".join(f"0x{byte:02X}" for byte in public_bytes)
-            + "}"
-        )
-        cg.add(var.set_master_public_key(public_expr))
-
-    if (interval := config.get(CONF_ROTATION_INTERVAL)) is not None:
-        cg.add(var.set_rotation_interval(int(interval.total_milliseconds)))
 
     await cg.register_component(var, config)
 

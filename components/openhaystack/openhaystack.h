@@ -21,7 +21,6 @@ class OpenHaystack : public Component {
   static constexpr size_t ADV_PAYLOAD_KEY_TRAILING_BITS_INDEX = 29;
   static constexpr size_t MASTER_PRIVATE_KEY_SIZE = 28;
   static constexpr size_t MASTER_SYMMETRIC_KEY_SIZE = 32;
-  static constexpr size_t MASTER_PUBLIC_KEY_UNCOMPRESSED_SIZE = 57;
   static constexpr size_t ANTI_TRACKING_COMPONENT_SIZE = 36;
   static constexpr size_t DERIVED_SHARED_DATA_SIZE = ANTI_TRACKING_COMPONENT_SIZE * 2;
   static constexpr size_t MASTER_KEY_DIGEST_SIZE = 16;
@@ -40,9 +39,8 @@ class OpenHaystack : public Component {
 
   void set_master_keys(const std::array<uint8_t, MASTER_PRIVATE_KEY_SIZE> &master_private_key,
                        const std::array<uint8_t, MASTER_SYMMETRIC_KEY_SIZE> &master_symmetric_key);
-  void set_master_public_key(const std::array<uint8_t, MASTER_PUBLIC_KEY_UNCOMPRESSED_SIZE> &master_public_key);
 
-  void set_rotation_interval(uint32_t interval_ms) { this->rotation_interval_ms_ = interval_ms; }
+  static constexpr uint32_t ROTATION_INTERVAL_MS = 15U * 60U * 1000U;
  protected:
   static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param);
   static void set_addr_from_key(uint8_t *addr, const uint8_t *public_key);
@@ -57,8 +55,7 @@ class OpenHaystack : public Component {
   bool initialize_master_keys_();
   bool derive_next_master_key_();
   bool derive_public_key_from_private_(const std::array<uint8_t, MASTER_PRIVATE_KEY_SIZE> &private_key,
-                                       AdvertisingKey &advertising_key_out,
-                                       std::array<uint8_t, MASTER_PUBLIC_KEY_UNCOMPRESSED_SIZE> *uncompressed_out = nullptr);
+                                       AdvertisingKey &advertising_key_out);
   bool calculate_derived_private_key_(const std::array<uint8_t, DERIVED_SHARED_DATA_SIZE> &shared_data,
                                       std::array<uint8_t, MASTER_PRIVATE_KEY_SIZE> &out_private_key);
   bool ensure_nvs_initialized_();
@@ -91,14 +88,11 @@ class OpenHaystack : public Component {
   bool awaiting_refresh_after_stop_ = false;
   bool has_master_keys_ = false;
   bool master_initialized_ = false;
-  bool master_public_key_set_ = false;
   std::array<uint8_t, MASTER_PRIVATE_KEY_SIZE> master_private_key_{};
   std::array<uint8_t, MASTER_SYMMETRIC_KEY_SIZE> master_symmetric_key_{};
-  std::array<uint8_t, MASTER_PUBLIC_KEY_UNCOMPRESSED_SIZE> master_public_key_{};
   std::array<uint8_t, MASTER_PRIVATE_KEY_SIZE> current_private_key_{};
   std::array<uint8_t, MASTER_SYMMETRIC_KEY_SIZE> current_symmetric_key_{};
   uint32_t derived_key_counter_ = 0;
-  uint32_t rotation_interval_ms_ = 0;
   uint16_t adv_interval_min_ = 0x0C80;
   uint16_t adv_interval_max_ = 0x0C80;
 };

@@ -34,5 +34,3 @@ ota:
 openhaystack:
   master_private_key: !secret openhaystack_master_private_key
   master_symmetric_key: !secret openhaystack_master_symmetric_key
-  master_public_key: !secret openhaystack_master_public_key  # Optional verification
-  rotation_interval: 15min
