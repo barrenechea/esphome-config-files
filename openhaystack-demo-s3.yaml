@@ -32,6 +32,7 @@ ota:
     password: !secret ota_password
 
 openhaystack:
-  keys:
-    - !secret openhaystack_key
-  # rotation_interval: 10min  # Optional: enable when providing multiple advertisement keys
+  master_private_key: !secret openhaystack_master_private_key
+  master_symmetric_key: !secret openhaystack_master_symmetric_key
+  master_public_key: !secret openhaystack_master_public_key  # Optional verification
+  rotation_interval: 15min

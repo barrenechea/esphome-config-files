@@ -3,7 +3,6 @@
 #include "esphome/core/component.h"
 
 #include <array>
-#include <vector>
 
 #ifdef USE_ESP32
 
@@ -20,23 +19,30 @@ class OpenHaystack : public Component {
   static constexpr size_t ADV_PAYLOAD_KEY_OFFSET = 7;
   static constexpr size_t ADV_PAYLOAD_KEY_LENGTH = 22;
   static constexpr size_t ADV_PAYLOAD_KEY_TRAILING_BITS_INDEX = 29;
-
+  static constexpr size_t MASTER_PRIVATE_KEY_SIZE = 28;
+  static constexpr size_t MASTER_SYMMETRIC_KEY_SIZE = 32;
+  static constexpr size_t MASTER_PUBLIC_KEY_UNCOMPRESSED_SIZE = 57;
+  static constexpr size_t ANTI_TRACKING_COMPONENT_SIZE = 36;
+  static constexpr size_t DERIVED_SHARED_DATA_SIZE = ANTI_TRACKING_COMPONENT_SIZE * 2;
+  static constexpr size_t MASTER_KEY_DIGEST_SIZE = 16;
+  static constexpr const char *const NVS_NAMESPACE = "openhstk";
+  static constexpr const char *const NVS_KEY_MASTER_DIGEST = "master_hash";
+  static constexpr const char *const NVS_KEY_CURRENT_PRIV = "curr_priv";
+  static constexpr const char *const NVS_KEY_CURRENT_SYM = "curr_sym";
+  static constexpr const char *const NVS_KEY_COUNTER = "counter";
   using AdvertisingKey = std::array<uint8_t, ADVERTISING_KEY_SIZE>;
 
-  explicit OpenHaystack(const AdvertisingKey &advertising_key) {
-    this->advertising_keys_.push_back(advertising_key);
-  }
+  OpenHaystack() = default;
 
   void setup() override;
   void dump_config() override;
   float get_setup_priority() const override;
 
-  void add_additional_key(const AdvertisingKey &advertising_key) {
-    this->advertising_keys_.push_back(advertising_key);
-  }
+  void set_master_keys(const std::array<uint8_t, MASTER_PRIVATE_KEY_SIZE> &master_private_key,
+                       const std::array<uint8_t, MASTER_SYMMETRIC_KEY_SIZE> &master_symmetric_key);
+  void set_master_public_key(const std::array<uint8_t, MASTER_PUBLIC_KEY_UNCOMPRESSED_SIZE> &master_public_key);
 
   void set_rotation_interval(uint32_t interval_ms) { this->rotation_interval_ms_ = interval_ms; }
-
  protected:
   static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param);
   static void set_addr_from_key(uint8_t *addr, const uint8_t *public_key);
@@ -44,12 +50,29 @@ class OpenHaystack : public Component {
   static void ble_setup();
   static void configure_advertisement();
 
-  void apply_current_key_();
+  bool apply_current_key_();
   void refresh_advertisement_();
   void handle_advertising_stopped_();
   void schedule_key_rotation_();
+  bool initialize_master_keys_();
+  bool derive_next_master_key_();
+  bool derive_public_key_from_private_(const std::array<uint8_t, MASTER_PRIVATE_KEY_SIZE> &private_key,
+                                       AdvertisingKey &advertising_key_out,
+                                       std::array<uint8_t, MASTER_PUBLIC_KEY_UNCOMPRESSED_SIZE> *uncompressed_out = nullptr);
+  bool calculate_derived_private_key_(const std::array<uint8_t, DERIVED_SHARED_DATA_SIZE> &shared_data,
+                                      std::array<uint8_t, MASTER_PRIVATE_KEY_SIZE> &out_private_key);
+  bool ensure_nvs_initialized_();
+  bool save_persisted_state_();
+  bool load_persisted_state_();
+  void clear_persisted_state_();
+  bool compute_master_key_digest_(std::array<uint8_t, MASTER_KEY_DIGEST_SIZE> &digest_out) const;
+  static bool kdf_(const uint8_t *input,
+                   size_t input_length,
+                   const char *label,
+                   uint8_t *output,
+                   size_t output_length);
 
-  std::vector<AdvertisingKey> advertising_keys_;
+  AdvertisingKey current_advertising_key_{};
   std::array<uint8_t, RANDOM_ADDRESS_SIZE> random_address_{{0xFF, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF}};
   std::array<uint8_t, ADV_PAYLOAD_SIZE> adv_data_{{
     0x1e, /* Length (30) */
@@ -64,11 +87,20 @@ class OpenHaystack : public Component {
     0x00, /* Hint (0x00) */
   }};
 
-  size_t current_key_index_ = 0;
-  size_t pending_key_index_ = 0;
-  bool has_pending_key_ = false;
   bool advertising_active_ = false;
+  bool awaiting_refresh_after_stop_ = false;
+  bool has_master_keys_ = false;
+  bool master_initialized_ = false;
+  bool master_public_key_set_ = false;
+  std::array<uint8_t, MASTER_PRIVATE_KEY_SIZE> master_private_key_{};
+  std::array<uint8_t, MASTER_SYMMETRIC_KEY_SIZE> master_symmetric_key_{};
+  std::array<uint8_t, MASTER_PUBLIC_KEY_UNCOMPRESSED_SIZE> master_public_key_{};
+  std::array<uint8_t, MASTER_PRIVATE_KEY_SIZE> current_private_key_{};
+  std::array<uint8_t, MASTER_SYMMETRIC_KEY_SIZE> current_symmetric_key_{};
+  uint32_t derived_key_counter_ = 0;
   uint32_t rotation_interval_ms_ = 0;
+  uint16_t adv_interval_min_ = 0x0C80;
+  uint16_t adv_interval_max_ = 0x0C80;
 };
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
