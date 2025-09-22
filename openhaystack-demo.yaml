@@ -15,6 +15,21 @@ esphome:
 <<: !include common/board/wemos-d1-mini32.yaml
 <<: !include common/common-hotspot.yaml
 
+# Time component for openhaystack daily key rotation
+time:
+  - platform: sntp
+    id: sntp_time
+    timezone: "UTC"
+    on_time:
+      # Trigger key rotation at 04:00:00 UTC every day
+      - seconds: 0
+        minutes: 0
+        hours: 4
+        then:
+          - lambda: |-
+              id(openhaystack_tag).schedule_key_rotation();
+
 openhaystack:
+  id: openhaystack_tag
   master_private_key: !secret openhaystack_master_private_key
   master_symmetric_key: !secret openhaystack_master_symmetric_key

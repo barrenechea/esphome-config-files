@@ -37,10 +37,10 @@ class OpenHaystack : public Component {
   void dump_config() override;
   float get_setup_priority() const override;
 
+  void schedule_key_rotation();
   void set_master_keys(const std::array<uint8_t, MASTER_PRIVATE_KEY_SIZE> &master_private_key,
                        const std::array<uint8_t, MASTER_SYMMETRIC_KEY_SIZE> &master_symmetric_key);
 
-  static constexpr uint32_t ROTATION_INTERVAL_MS = 15U * 60U * 1000U;
  protected:
   static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param);
   static void set_addr_from_key(uint8_t *addr, const uint8_t *public_key);
@@ -51,7 +51,6 @@ class OpenHaystack : public Component {
   bool apply_current_key_();
   void refresh_advertisement_();
   void handle_advertising_stopped_();
-  void schedule_key_rotation_();
   bool initialize_master_keys_();
   bool derive_next_master_key_();
   bool derive_public_key_from_private_(const std::array<uint8_t, MASTER_PRIVATE_KEY_SIZE> &private_key,

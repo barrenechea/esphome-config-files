@@ -52,14 +52,12 @@ void OpenHaystack::dump_config() {
   if (this->has_master_keys_) {
     ESP_LOGCONFIG(TAG, "  Master key derivation: enabled");
     ESP_LOGCONFIG(TAG, "  Derived key counter: %u", static_cast<unsigned>(this->derived_key_counter_));
-    ESP_LOGCONFIG(TAG, "  Key rotation interval: %" PRIu32 "ms", static_cast<uint32_t>(ROTATION_INTERVAL_MS));
   }
   if (!this->has_master_keys_) {
     ESP_LOGCONFIG(TAG, "  Master keys: not configured");
   }
   uint32_t interval_ms = static_cast<uint32_t>(this->adv_interval_min_ * 625U / 1000U);
   ESP_LOGCONFIG(TAG, "  Advertising interval: %" PRIu32 " ms", interval_ms);
-  ESP_LOGCONFIG(TAG, "  Controller memory trim: enabled");
 }
 
 void OpenHaystack::setup() {
@@ -87,8 +85,6 @@ void OpenHaystack::setup() {
   }
 
   ble_setup();
-
-  this->set_interval("openhaystack_key_rotation", ROTATION_INTERVAL_MS, [this]() { this->schedule_key_rotation_(); });
 }
 
 float OpenHaystack::get_setup_priority() const { return setup_priority::BLUETOOTH; }
@@ -254,7 +250,7 @@ void OpenHaystack::handle_advertising_stopped_() {
   }
 }
 
-void OpenHaystack::schedule_key_rotation_() {
+void OpenHaystack::schedule_key_rotation() {
   if (!this->master_initialized_) {
     ESP_LOGW(TAG, "Cannot rotate keys: master keys not initialized yet");
     return;
