@@ -1,0 +1,4 @@
+<<: !include core/thread.yaml
+<<: !include core/ota.yaml
+<<: !include core/logger.yaml
+<<: !include core/api.yaml
