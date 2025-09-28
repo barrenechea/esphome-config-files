@@ -6,7 +6,6 @@ esphome:
 
 <<: !include ../board/espressif-esp32s3.yaml
 <<: !include ../common-esp32.yaml
-<<: !include ../time/sync.yaml
 
 # SPI for Display
 spi:

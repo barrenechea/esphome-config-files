@@ -1,4 +1,6 @@
-# Home Assistant API
+# Home Assistant API with Home Assistant time synchronization
+<<: !include ../time/sync.yaml
+
 api:
   encryption:
     key: !secret api_encryption_key

@@ -6,7 +6,6 @@ esphome:
 <<: !include ../core/wifi-failover-hotspot.yaml
 <<: !include ../core/api.yaml
 <<: !include ../core/ota.yaml
-<<: !include ../time/sync.yaml
 
 # Make sure logging is not using the serial port
 logger:
