@@ -22,6 +22,10 @@ binary_sensor:
     on_press:
       - switch.toggle: relay
 
+button:
+  - platform: restart
+    name: "$device_name $device_id Restart"
+
 sensor:
   - platform: wifi_signal
     name: "$device_name $device_id WiFi Signal"
@@ -33,5 +37,3 @@ switch:
     pin: GPIO12
     id: relay
     restore_mode: RESTORE_DEFAULT_OFF
-  - platform: restart
-    name: "$device_name $device_id Restart"

@@ -9,9 +9,11 @@ esphome:
 <<: !include common/board/huzzah-esp8266.yaml
 <<: !include common/common-hotspot.yaml
 
-switch:
+button:
   - platform: restart
     name: "$device_name Restart"
+
+switch:
   - platform: gpio
     internal: True
     pin: GPIO14

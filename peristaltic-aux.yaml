@@ -200,9 +200,11 @@ light:
     default_transition_length: 0s
     gamma_correct: 0
 
-switch:
+button:
   - platform: restart
     name: "$device_name Restart"
+
+switch:
   - platform: gpio
     pin: GPIO27
     name: "$device_name Enable Pumps 1-2"
