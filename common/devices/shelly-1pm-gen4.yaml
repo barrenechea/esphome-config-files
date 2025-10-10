@@ -32,6 +32,9 @@ binary_sensor:
       mode:
         input: true
         pullup: true
+    on_press:
+      then:
+        - switch.toggle: shelly_1pm_gen4_relay
 
   - id: shelly_1pm_gen4_switch
     name: $device_name Switch
@@ -40,6 +43,20 @@ binary_sensor:
       number: GPIO10
     filters:
       - delayed_off: 50ms
+    on_press:
+      then:
+        - switch.toggle: shelly_1pm_gen4_relay
+
+output:
+  - id: shelly_1pm_gen4_relay_output
+    platform: gpio
+    pin: GPIO4
+
+switch:
+  - platform: output
+    id: shelly_1pm_gen4_relay
+    name: "$device_name Relay"
+    output: shelly_1pm_gen4_relay_output
 
 sensor:
   - platform: ntc

@@ -3,14 +3,4 @@ substitutions:
   device_name: Treadmill Relay
   device_id: "1587-681-6856"
 
-<<: !include common/devices/shelly-gen4.yaml
-
-output:
-  - id: relay_output
-    platform: gpio
-    pin: GPIO4
-
-switch:
-  - platform: output
-    name: "$device_name Relay"
-    output: relay_output
+<<: !include common/devices/shelly-1pm-gen4.yaml

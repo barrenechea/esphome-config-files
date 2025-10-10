@@ -1,0 +1,6 @@
+substitutions:
+  id: 1pm-mini-gen4-1538-672-6096
+  device_name: Shelly 1PM Mini Gen4
+  device_id: "1538-672-6096"
+
+<<: !include common/devices/shelly-1pm-mini-gen4.yaml
