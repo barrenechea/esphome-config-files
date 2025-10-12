@@ -1,0 +1,21 @@
+external_components:
+  - source:
+      type: git
+      url: https://github.com/barrenechea/esphome-config-files
+      ref: main
+    components: [openhaystack]
+
+esphome:
+  name: openhaystack-demo-h2
+
+<<: !include common/board/espressif-esp32h2.yaml
+<<: !include common/common-esp32-thread.yaml
+
+# Enable logging
+logger:
+  hardware_uart: USB_SERIAL_JTAG
+
+openhaystack:
+  keys:
+    - !secret openhaystack_key
+  # rotation_interval: 10min  # Optional: enable when providing multiple advertisement keys
