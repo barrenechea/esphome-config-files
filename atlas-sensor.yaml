@@ -6,8 +6,8 @@ esphome:
   name: $id
   friendly_name: $device_name
 
-<<: !include common/board/huzzah-esp8266.yaml
-<<: !include common/common-hotspot.yaml
+<<: !include common/board/espressif-esp32c3.yaml
+<<: !include common/common-esp32.yaml
 
 button:
   - platform: restart
@@ -16,23 +16,23 @@ button:
 switch:
   - platform: gpio
     internal: True
-    pin: GPIO14
+    pin: GPIO3
     name: "$device_name pH On"
     inverted: no
   - platform: gpio
     internal: True
-    pin: GPIO15
+    pin: GPIO8
     name: "$device_name RTD Temp On"
     inverted: yes
   - platform: gpio
     internal: True
-    pin: GPIO12
+    pin: GPIO4
     name: "$device_name EC On"
     inverted: no
 
 i2c:
-  sda: GPIO04
-  scl: GPIO05
+  sda: GPIO18
+  scl: GPIO19
   scan: True
 
 sensor:

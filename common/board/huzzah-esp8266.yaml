@@ -1,3 +1,0 @@
-esp8266:
-  board: huzzah
-  restore_from_flash: true
