@@ -132,11 +132,6 @@ void OpenHaystack::ble_setup() {
     // start bt controller
     if (esp_bt_controller_get_status() == ESP_BT_CONTROLLER_STATUS_IDLE) {
       esp_bt_controller_config_t cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
-      cfg.ble_max_act = std::min<uint8_t>(cfg.ble_max_act, static_cast<uint8_t>(1));
-      cfg.ble_st_acl_tx_buf_nb = std::min<uint8_t>(cfg.ble_st_acl_tx_buf_nb, static_cast<uint8_t>(1));
-      cfg.normal_adv_size = std::min<uint16_t>(cfg.normal_adv_size, static_cast<uint16_t>(10));
-      cfg.mesh_adv_size = std::min<uint16_t>(cfg.mesh_adv_size, static_cast<uint16_t>(10));
-      cfg.dup_list_refresh_period = 0;
       err = esp_bt_controller_init(&cfg);
       if (err != ESP_OK) {
         ESP_LOGE(TAG, "esp_bt_controller_init failed: %s", esp_err_to_name(err));
