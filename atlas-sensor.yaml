@@ -6,8 +6,8 @@ esphome:
   name: $id
   friendly_name: $device_name
 
-<<: !include common/board/espressif-esp32c3.yaml
-<<: !include common/common-esp32.yaml
+<<: !include common/board/espressif-esp32h2.yaml
+<<: !include common/common-esp32-thread.yaml
 
 button:
   - platform: restart
@@ -16,23 +16,28 @@ button:
 switch:
   - platform: gpio
     internal: True
-    pin: GPIO3
+    pin: GPIO14
     name: "$device_name pH On"
     inverted: no
   - platform: gpio
     internal: True
-    pin: GPIO8
+    pin: GPIO11
     name: "$device_name RTD Temp On"
     inverted: yes
   - platform: gpio
     internal: True
-    pin: GPIO4
+    pin: GPIO13
     name: "$device_name EC On"
+    inverted: no
+  - platform: gpio
+    internal: True
+    pin: GPIO12
+    name: "$device_name AUX On"
     inverted: no
 
 i2c:
-  sda: GPIO18
-  scl: GPIO19
+  sda: GPIO22
+  scl: GPIO10
   scan: True
 
 sensor:
