@@ -4,8 +4,5 @@ esp32:
   flash_size: 8MB
   framework:
     type: esp-idf
-    version: 5.5.1
-    release: ""
-    platform_version: "https://github.com/pioarduino/platform-espressif32.git#develop"
     sdkconfig_options:
       CONFIG_ESPTOOLPY_FLASHSIZE_8MB: y
