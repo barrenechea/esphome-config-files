@@ -1,0 +1,6 @@
+substitutions:
+  id: gen4-em-mini-1086-184-7325
+  device_name: Shelly EM Mini Gen4
+  device_id: "1086-184-7325"
+
+<<: !include common/devices/gen4-em-mini.yaml
