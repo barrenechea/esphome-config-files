@@ -34,9 +34,9 @@ binary_sensor:
         pullup: true
     on_press:
       then:
-        - switch.toggle: shelly_1pm_mini_gen4_relay
+        - switch.toggle: relay
 
-  - id: shelly_1pm_gen4_switch
+  - id: input_switch
     name: $device_name Switch
     platform: gpio
     pin:
@@ -45,18 +45,13 @@ binary_sensor:
       - delayed_off: 50ms
     on_press:
       then:
-        - switch.toggle: shelly_1pm_mini_gen4_relay
-
-output:
-  - id: shelly_1pm_mini_gen4_relay_output
-    platform: gpio
-    pin: GPIO10
+        - switch.toggle: relay
 
 switch:
-  - platform: output
-    id: shelly_1pm_mini_gen4_relay
+  - platform: gpio
+    id: relay
     name: "$device_name Relay"
-    output: shelly_1pm_mini_gen4_relay_output
+    pin: GPIO10
     restore_mode: RESTORE_DEFAULT_OFF
 
 sensor:
@@ -88,23 +83,23 @@ sensor:
     line_frequency: 50Hz
     voltage:
       name: $device_name Voltage
-      id: sensor_voltage
+      id: voltage
       entity_category: diagnostic
     current:
       name: $device_name Current
-      id: sensor_current
+      id: current
     power:
       name: $device_name Power
-      id: sensor_power
+      id: power
       accuracy_decimals: 2
     energy:
       name: $device_name Energy
-      id: sensor_energy
+      id: energy
       accuracy_decimals: 3
       device_class: energy
       state_class: total_increasing
     frequency:
       name: $device_name Frequency
-      id: sensor_frequency
+      id: frequency
       accuracy_decimals: 2
       entity_category: diagnostic
