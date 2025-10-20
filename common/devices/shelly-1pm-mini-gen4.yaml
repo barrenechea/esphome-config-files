@@ -57,6 +57,7 @@ switch:
     id: shelly_1pm_mini_gen4_relay
     name: "$device_name Relay"
     output: shelly_1pm_mini_gen4_relay_output
+    restore_mode: RESTORE_DEFAULT_OFF
 
 sensor:
   - platform: ntc
