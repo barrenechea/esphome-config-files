@@ -5,10 +5,6 @@ esphome:
 <<: !include ../board/shelly-gen4.yaml
 <<: !include ../common-esp32-thread.yaml
 
-external_components:
-  - source: github://pr#9248
-    components: [ uart ]
-
 status_led:
   pin:
     number: GPIO5
