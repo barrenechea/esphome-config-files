@@ -7,7 +7,7 @@ esphome:
   friendly_name: $device_name
 
 <<: !include common/board/espressif-esp32c5.yaml
-<<: !include common/common-esp32.yaml
+<<: !include common/common-esp32-thread.yaml
 
 button:
   - platform: restart

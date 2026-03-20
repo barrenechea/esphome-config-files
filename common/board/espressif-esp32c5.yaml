@@ -5,7 +5,5 @@ esp32:
     type: esp-idf
     sdkconfig_options:
       CONFIG_COMPILER_OPTIMIZATION_SIZE: y
-      CONFIG_FREERTOS_UNICORE: y
       # Enable power management
       CONFIG_PM_ENABLE: y
-      CONFIG_PM_DFS_INIT_AUTO: y
