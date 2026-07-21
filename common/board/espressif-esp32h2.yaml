@@ -2,7 +2,6 @@ esp32:
   board: esp32-h2-devkitm-1
   variant: esp32h2
   framework:
-    type: esp-idf
     sdkconfig_options:
       CONFIG_COMPILER_OPTIMIZATION_SIZE: y
       CONFIG_FREERTOS_UNICORE: y

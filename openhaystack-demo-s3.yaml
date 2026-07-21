@@ -7,13 +7,10 @@ external_components:
 
 esphome:
   name: openhaystack-demo-s3
-  platformio_options:
-    board_build.flash_mode: dio
 
 esp32:
   board: esp32-s3-devkitc-1
-  framework:
-    type: esp-idf
+  flash_mode: dio
 
 wifi:
   ssid: !secret wifi_ssid

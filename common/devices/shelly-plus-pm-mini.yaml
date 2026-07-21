@@ -55,6 +55,7 @@ sensor:
 
   - platform: bl0942
     uart_id: uart_bus
+    update_interval: 1s
     voltage:
       name: $device_name Voltage
     current:

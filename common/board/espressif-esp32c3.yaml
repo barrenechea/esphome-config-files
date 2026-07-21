@@ -1,7 +1,7 @@
 esp32:
   board: esp32-c3-devkitm-1
+  flash_mode: dio
   framework:
-    type: esp-idf
     sdkconfig_options:
       CONFIG_COMPILER_OPTIMIZATION_SIZE: y
       CONFIG_FREERTOS_UNICORE: y
