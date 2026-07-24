@@ -48,7 +48,7 @@ void OpenHaystack::dump_config() {
     ESP_LOGCONFIG(TAG, "  Advertising keys configured: %zu", this->advertising_keys_.size());
     if (this->advertising_keys_.size() > 1) {
       if (this->rotation_interval_ms_ > 0) {
-        ESP_LOGCONFIG(TAG, "  Key rotation interval: %ums", this->rotation_interval_ms_);
+        ESP_LOGCONFIG(TAG, "  Key rotation interval: %" PRIu32 "ms", this->rotation_interval_ms_);
       } else {
         ESP_LOGCONFIG(TAG, "  Key rotation interval: disabled");
       }
