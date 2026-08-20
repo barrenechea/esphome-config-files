@@ -28,6 +28,8 @@ binary_sensor:
       mode:
         input: true
         pullup: true
+    filters:
+      - delayed_on_off: 20ms
     on_press:
       then:
         - switch.toggle: relay

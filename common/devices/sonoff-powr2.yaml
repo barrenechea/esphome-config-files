@@ -30,6 +30,8 @@ binary_sensor:
       inverted: True
     name: $device_name $device_id Button
     internal: true
+    filters:
+      - delayed_on_off: 20ms
     on_press:
       - switch.toggle: relay
 

@@ -28,12 +28,16 @@ binary_sensor:
       mode:
         input: true
         pullup: true
+    filters:
+      - delayed_on_off: 20ms
     on_press:
       then:
         - switch.toggle: relay
   - platform: gpio
     name: $device_name Switch
     pin: GPIO10
+    filters:
+      - delayed_off: 50ms
     on_state:
       then:
         - switch.toggle: relay

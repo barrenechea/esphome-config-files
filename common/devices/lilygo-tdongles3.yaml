@@ -26,6 +26,8 @@ binary_sensor:
       mode: INPUT_PULLUP
       inverted: true
     name: $device_name $device_id Button
+    filters:
+      - delayed_on_off: 20ms
     on_press:
       - logger.log: "Button pressed"
 
@@ -39,20 +41,23 @@ light:
     restore_mode: RESTORE_DEFAULT_OFF
 
 display:
-  - platform: st7735
+  - platform: mipi_spi
+    model: ST7735
     spi_id: display_bus
-    model: "INITR_MINI160X80"
     reset_pin: GPIO01
     cs_pin: GPIO04
     dc_pin: GPIO02
     invert_colors: true
-    use_bgr: true
+    color_order: bgr
     rotation: 270
-    device_width: 80
-    device_height: 160
-    col_start: 26
-    row_start: 1
-    eight_bit_color: true
+    color_depth: 8
+    dimensions:
+      width: 80
+      height: 160
+      offset_width: 26
+      offset_height: 1
+      pad_width: 26
+      pad_height: 1
     update_interval: 1s
     lambda: |-
       it.printf(3, 30, id(inconsolata), Color(255, 0, 0), id(device_time).now().strftime("%d-%m-%Y %H:%M:%S").c_str());
